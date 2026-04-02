@@ -1,4 +1,5 @@
-import { FileText, CheckCircle, AlertTriangle, Download, ArrowRight } from 'lucide-react';
+import { useState, useEffect, type FormEvent } from 'react';
+import { FileText, CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react';
 
 interface ExtractedData {
   tipo_comprobante: string;
@@ -27,122 +28,229 @@ interface ReviewPanelProps {
 
 export default function ReviewPanel({ imagePreviewUrl, extractedData, isLoading, currentIndex, totalFiles, onApprove }: ReviewPanelProps) {
   
+  const [formData, setFormData] = useState<ExtractedData | null>(null);
+
+  useEffect(() => {
+    if (extractedData) {
+      setFormData(JSON.parse(JSON.stringify(extractedData))); // Deep copy para evitar mutar el origen
+    }
+  }, [extractedData]);
+
   if (isLoading) {
     return (
-      <div className="w-full flex flex-col items-center justify-center p-12 bg-white rounded-xl shadow-sm border border-gray-100 min-h-[400px]">
+      <div className="w-full flex flex-col items-center justify-center p-12 bg-white rounded-xl shadow-sm border border-gray-100 min-h-[500px]">
         <div className="w-12 h-12 border-4 border-brand-sage border-t-brand-accent rounded-full animate-spin mb-4"></div>
-        <h3 className="text-xl font-semibold text-brand-navy">Analizando Comprobante...</h3>
-        <p className="text-sm text-brand-sage mt-2">Corriendo OCR, validación Módulo 11 y sumatoria de IVAs.</p>
+        <h3 className="text-xl font-semibold text-brand-navy">Analizando Comprobante con IA...</h3>
+        <p className="text-sm text-brand-sage mt-2">Extrayendo datos de AFIP y validando matemáticas.</p>
       </div>
     );
   }
 
-  if (!imagePreviewUrl || !extractedData) return null;
+  if (!imagePreviewUrl || !formData) return null;
 
-  // Calculo de Módulo 11 en frontend para feedback visual rápido a pesar de validarse en backend
-  const isValidCuit = extractedData.cuit_emisor.length === 11;
-  const noGravadoExento = (extractedData.importes.no_gravado || 0) + (extractedData.importes.exento || 0);
-  const isMathValid = Math.abs((extractedData.importes.neto_gravado_21 + extractedData.importes.iva_21 + noGravadoExento) - extractedData.importes.total) <= 1.0;
+  const validateCuitModulo11 = (cuit: string) => {
+    if (!cuit || cuit.length !== 11) return false;
+    const base = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+    let sum = 0;
+    for (let i = 0; i < 10; i++) {
+        sum += parseInt(cuit[i]) * base[i];
+    }
+    let verifier = 11 - (sum % 11);
+    if (verifier === 11) verifier = 0;
+    if (verifier === 10) verifier = 9;
+    return verifier.toString() === cuit[10];
+  };
+
+  const isValidCuit = validateCuitModulo11(formData.cuit_emisor);
+  const noGravadoExento = (formData.importes.no_gravado || 0) + (formData.importes.exento || 0);
+  const mathCalculado = (formData.importes.neto_gravado_21 || 0) + (formData.importes.iva_21 || 0) + noGravadoExento;
+  const isMathValid = Math.abs(mathCalculado - (formData.importes.total || 0)) <= 1.0;
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault(); // Evita recargar la pagina si el usuario oprime Enter
+    onApprove(formData);
+  };
+
+  const updateImportes = (key: keyof ExtractedData['importes'], value: string) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      importes: {
+        ...prev.importes,
+        [key]: parseFloat(value) || 0
+      }
+    }));
+  };
+
+  const updateField = (key: keyof ExtractedData, value: string) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      [key]: value
+    }));
+  };
 
   return (
-    <div className="w-full bg-white rounded-xl shadow-lg border border-gray-100 flex flex-col md:flex-row overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full bg-white rounded-xl shadow-2xl border border-gray-100 flex flex-col lg:flex-row overflow-hidden animate-in slide-in-from-bottom-4 duration-500 h-[80vh] min-h-[600px] max-h-[800px]">
       
-      {/* Visualizador de imagen interactivo (Left Panel) */}
-      <div className="md:w-1/2 bg-gray-50 p-4 border-r border-gray-100 flex flex-col">
+      {/* PANEL IZQUIERDO: Visor de Documento */}
+      <div className="lg:w-1/2 bg-gray-100 p-4 border-r border-gray-200 flex flex-col relative">
         <div className="flex items-center justify-between mb-3 px-2">
           <h4 className="font-semibold text-brand-navy flex items-center gap-2">
             <FileText size={18} className="text-brand-accent"/> Documento Original
           </h4>
-          <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">Zoom habilitado</span>
+          <span className="text-[10px] uppercase tracking-widest bg-gray-200 text-gray-600 px-2 py-1 rounded font-bold">Zoom habilitado</span>
         </div>
-        <div className="flex-1 bg-gray-200 rounded-lg overflow-hidden border border-gray-200 relative group cursor-zoom-in min-h-[400px]">
-          {/* Mockup del Zoomable Image */}
-          <img src={imagePreviewUrl} alt="Comprobante" className="w-full h-full object-contain absolute inset-0" />
+        <div className="flex-1 bg-white rounded-xl overflow-hidden border border-gray-300 relative cursor-zoom-in shadow-inner">
+          <img src={imagePreviewUrl} alt="Comprobante" className="w-full h-full object-contain absolute inset-0 py-4" />
         </div>
       </div>
 
-      {/* Formulario Magico de Revision (Right Panel) */}
-      <div className="md:w-1/2 p-6 flex flex-col bg-white">
-        <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
+      {/* PANEL DERECHO: Formulario Keyboard-First (Productivo) */}
+      <form onSubmit={handleSubmit} className="lg:w-1/2 p-6 md:p-8 flex flex-col bg-white overflow-y-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-4 border-b border-gray-100 gap-4">
            <div>
-             <h3 className="text-xl font-bold text-brand-navy">Estructura Extraída</h3>
-             <p className="text-sm text-brand-sage">Modifica los campos si es necesario antes de exportar.</p>
+             <h3 className="text-2xl font-extrabold text-brand-navy tracking-tight">Datos Fiscales</h3>
+             <p className="text-sm text-gray-500 mt-1">
+               Corrobora y oprime <kbd className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 text-xs font-mono text-gray-600 shadow-sm mx-1">ENTER</kbd> para aprobar.
+             </p>
            </div>
            {isMathValid && isValidCuit ? (
-             <div className="bg-green-50 text-green-700 px-3 py-1.5 rounded-full flex items-center gap-1.5 text-sm font-medium border border-green-200">
-               <CheckCircle size={16} /> Todo Válido
+             <div className="bg-green-50 text-green-700 px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold border border-green-200 shadow-sm">
+               <CheckCircle size={18} /> Validado por AFIP
              </div>
            ) : (
-             <div className="bg-red-50 text-red-700 px-3 py-1.5 rounded-full flex items-center gap-1.5 text-sm font-medium border border-red-200">
-               <AlertTriangle size={16} /> Revisar Error
+             <div className="bg-red-50 text-red-700 px-3 py-2 rounded-lg flex items-center gap-2 text-[13px] font-semibold border border-red-200 shadow-sm">
+               <AlertTriangle size={18} className="shrink-0" /> Inconsistencia
              </div>
            )}
         </div>
 
-        <div className="flex-1 overflow-y-auto pr-2 space-y-4">
-           {/* Section 1: Cabecera AFIP */}
-           <div className="grid grid-cols-2 gap-4">
+        <div className="flex-1 space-y-5">
+           {/* Seccion: Cabecera AFIP */}
+           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Tipo Comp.</label>
-                <input type="text" defaultValue={extractedData.tipo_comprobante} className="input-field font-medium text-brand-navy" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Fecha</label>
-                <input type="date" defaultValue={extractedData.fecha_emision} className="input-field" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Punto Venta</label>
-                <input type="text" defaultValue={extractedData.punto_venta} className="input-field" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Número</label>
-                <input type="text" defaultValue={extractedData.numero_comprobante} className="input-field" />
-              </div>
-           </div>
-
-           <div className="pt-2">
-             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">CUIT Emisor</label>
-             <div className="relative">
-                <input type="text" defaultValue={extractedData.cuit_emisor} 
-                  className={`input-field font-medium ${isValidCuit ? 'border-gray-200 focus:ring-brand-sage' : 'border-red-400 bg-red-50 text-red-800 focus:ring-red-500'}`} 
+                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Tipo</label>
+                <input 
+                  autoFocus 
+                  type="text" 
+                  value={formData.tipo_comprobante} 
+                  onChange={(e) => updateField('tipo_comprobante', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-bold text-brand-navy focus:ring-2 focus:ring-brand-sage outline-none transition-all shadow-sm" 
+                  tabIndex={1}
                 />
-                {!isValidCuit && <AlertTriangle size={16} className="absolute right-3 top-2.5 text-red-500" />}
-             </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Punto Vta</label>
+                <input 
+                  type="text" 
+                  value={formData.punto_venta} 
+                  onChange={(e) => updateField('punto_venta', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono text-brand-navy focus:ring-2 focus:ring-brand-sage outline-none transition-all shadow-sm" 
+                  tabIndex={2}
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nro Comprobante</label>
+                <input 
+                  type="text" 
+                  value={formData.numero_comprobante} 
+                  onChange={(e) => updateField('numero_comprobante', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-mono text-brand-navy focus:ring-2 focus:ring-brand-sage outline-none transition-all shadow-sm" 
+                  tabIndex={3}
+                />
+              </div>
            </div>
 
-           <div className="bg-brand-light p-4 rounded-xl mt-4 border border-brand-sage/20 space-y-3">
-              <h4 className="font-semibold text-brand-navy border-b border-brand-sage/20 pb-2 flex items-center gap-2">
-                 Importes ARS
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Fecha Emisión</label>
+                <input 
+                  type="date" 
+                  value={formData.fecha_emision} 
+                  onChange={(e) => updateField('fecha_emision', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-brand-sage outline-none transition-all shadow-sm" 
+                  tabIndex={4}
+                />
+              </div>
+              <div>
+                 <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">CUIT Emisor</label>
+                 <div className="relative">
+                    <input 
+                      type="text" 
+                      value={formData.cuit_emisor} 
+                      onChange={(e) => updateField('cuit_emisor', e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg text-sm font-mono focus:ring-2 outline-none transition-all shadow-sm ${isValidCuit ? 'border-gray-200 text-brand-navy focus:ring-brand-sage' : 'border-red-400 bg-red-50 text-red-800 focus:ring-red-500'}`} 
+                      tabIndex={5}
+                    />
+                    {!isValidCuit && <AlertTriangle size={16} className="absolute right-3 top-2.5 text-red-500" />}
+                 </div>
+              </div>
+           </div>
+
+           <div className="bg-[#f0f4f4] p-5 rounded-xl border border-brand-sage/30 space-y-4">
+              <h4 className="font-bold text-brand-navy text-[11px] uppercase tracking-widest border-b border-brand-sage/20 pb-2 mb-2">
+                 Desglose de Importes (ARS)
               </h4>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-gray-500 uppercase">Neto Gravado</label>
-                  <input type="number" defaultValue={extractedData.importes.neto_gravado_21} className="w-full mt-1 px-2 py-1.5 border border-gray-200 rounded text-sm text-right" />
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1.5">Neto Grav. 21%</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    value={formData.importes.neto_gravado_21 || ''} 
+                    onChange={(e) => updateImportes('neto_gravado_21', e.target.value)}
+                    className="w-full px-2 py-2 border border-gray-200 rounded text-sm text-right font-mono focus:ring-2 focus:ring-brand-sage outline-none shadow-sm" 
+                    tabIndex={6}
+                  />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-gray-500 uppercase">No Gravado</label>
-                  <input type="number" defaultValue={noGravadoExento} className="w-full mt-1 px-2 py-1.5 border border-gray-200 rounded text-sm text-right bg-white" />
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1.5">IVA 21%</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    value={formData.importes.iva_21 || ''} 
+                    onChange={(e) => updateImportes('iva_21', e.target.value)}
+                    className="w-full px-2 py-2 border border-gray-200 rounded text-sm text-right font-mono focus:ring-2 focus:ring-brand-sage outline-none shadow-sm" 
+                    tabIndex={7}
+                  />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-gray-500 uppercase">IVA 21%</label>
-                  <input type="number" defaultValue={extractedData.importes.iva_21} className="w-full mt-1 px-2 py-1.5 border border-gray-200 rounded text-sm text-right bg-white" />
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 truncate">No Grav / Exento</label>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    value={noGravadoExento || ''} 
+                    onChange={(e) => updateImportes('no_gravado', e.target.value)}
+                    className="w-full px-2 py-2 border border-gray-200 rounded text-sm text-right font-mono focus:ring-2 focus:ring-brand-sage outline-none shadow-sm" 
+                    tabIndex={8}
+                  />
                 </div>
               </div>
-              <div className="pt-2 border-t border-brand-sage/10 flex justify-between items-center">
-                 <span className="font-bold text-brand-navy">TOTAL</span>
-                 <input type="number" defaultValue={extractedData.importes.total} 
-                  className={`w-1/2 px-2 py-1.5 border rounded font-bold text-right text-base ${isMathValid ? 'border-brand-sage bg-transparent' : 'border-red-400 bg-red-50 text-red-700'}`} 
+              
+              <div className="pt-4 border-t border-brand-sage/20 flex justify-between items-center mt-2">
+                 <span className="font-extrabold text-[#1e293b] tracking-widest text-lg">TOTAL FACTURADO</span>
+                 <input 
+                    type="number" 
+                    step="0.01"
+                    value={formData.importes.total || ''} 
+                    onChange={(e) => updateImportes('total', e.target.value)}
+                    className={`w-1/2 px-3 py-2 border rounded-lg font-bold text-right text-lg focus:ring-2 outline-none transition-all shadow-sm ${isMathValid ? 'border-gray-300 bg-white focus:ring-brand-sage' : 'border-red-400 bg-red-50 text-red-700 focus:ring-red-500 ring-2 ring-red-100'}`} 
+                    tabIndex={9}
                  />
               </div>
            </div>
         </div>
 
-        <div className="mt-6 pt-4 border-t border-gray-100 flex gap-3">
-          <button onClick={() => onApprove(extractedData)} className="flex-1 bg-brand-navy text-white font-semibold py-3 flex-row rounded-lg hover:bg-[#005477] transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
-             {currentIndex + 1 === totalFiles ? `Aprobar y Confirmar Lote (${currentIndex + 1}/${totalFiles})` : `Aprobar y Siguiente (${currentIndex + 1}/${totalFiles})`} <ArrowRight size={18} />
+        <div className="mt-8 pt-4 border-t border-gray-100 mt-auto">
+          <button 
+            type="submit" 
+            tabIndex={10}
+            className="w-full bg-[#1e293b] text-white font-bold py-4 rounded-xl hover:bg-[#0f172a] focus:ring-4 focus:ring-brand-sage/50 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 group"
+          >
+             {currentIndex + 1 === totalFiles ? `Finalizar y Generar Exportación (${currentIndex + 1}/${totalFiles})` : `Aprobar y Siguiente (${currentIndex + 1}/${totalFiles})`} 
+             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }

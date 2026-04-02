@@ -9,7 +9,7 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", "DUMMY_KEY"))
 
 app = FastAPI(title="ComproScan AR API", description="Motor Inteligente de procesamiento de facturas ARG")
@@ -52,48 +52,6 @@ class ComprobanteAFIP(BaseModel):
     moneda: str = "ARS"
     importes: Importes
     cae: Optional[str] = None
-
-    @field_validator('cuit_emisor')
-    @classmethod
-    def validar_cuit_modulo_11(cls, v: str) -> str:
-        base = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2]
-        suma = sum(int(v[i]) * base[i] for i in range(10))
-        d_verif = 11 - (suma % 11)
-        if d_verif == 11:
-            d_verif = 0
-        elif d_verif == 10:
-            d_verif = 9
-        if str(d_verif) != v[10]:
-            raise ValueError(f"Dígito verificador de CUIT inválido: {v}")
-        return v
-
-    @model_validator(mode='after')
-    def validar_matematica(self) -> 'ComprobanteAFIP':
-        netos_sum = sum([
-            self.importes.neto_gravado_21,
-            self.importes.neto_gravado_105,
-            self.importes.neto_gravado_27,
-            self.importes.exento,
-            self.importes.no_gravado
-        ])
-        ivas_sum = sum([
-            self.importes.iva_21,
-            self.importes.iva_105,
-            self.importes.iva_27
-        ])
-        percep_sum = sum([
-            self.importes.percepcion_iva,
-            self.importes.percepcion_iibb,
-            self.importes.percepcion_ganancias,
-            self.importes.percepcion_suss
-        ])
-        
-        suma_calculada = netos_sum + ivas_sum + percep_sum
-        
-        # Permitimos una tolerancia de +- 1 peso por posibles redondeos
-        if abs(suma_calculada - self.importes.total) > 1.0:
-            raise ValueError(f"Error aritmético: La suma de netos, ivas y percepciones ({suma_calculada}) difiere del total extraído ({self.importes.total})")
-        return self
 
 @app.get("/")
 def health_check():

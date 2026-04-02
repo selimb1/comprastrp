@@ -1,11 +1,18 @@
 import { useState } from 'react';
 import Dropzone from './components/Dropzone';
 import ReviewPanel from './components/ReviewPanel';
-import { Settings, BarChart2, FolderDown } from 'lucide-react';
+import Sidebar from './components/Sidebar';
+import ClientsPanel from './components/ClientsPanel';
+import HistoryGrid from './components/HistoryGrid';
+import LandingPage from './components/LandingPage';
+import { FolderDown, Search, Bell } from 'lucide-react';
 import axios from 'axios';
 
+type AppState = 'home' | 'upload' | 'processing' | 'review' | 'done' | 'history' | 'clients' | 'reports' | 'settings';
+
 function App() {
-  const [appState, setAppState] = useState<'upload' | 'processing' | 'review' | 'done'>('upload');
+  const [showLanding, setShowLanding] = useState(true);
+  const [appState, setAppState] = useState<AppState>('upload');
   const [filesToProcess, setFilesToProcess] = useState<File[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -26,7 +33,6 @@ function App() {
     setAppState('processing');
 
     try {
-       // Llamada real al backend Python montado
        const formData = new FormData();
        formData.append('file', file);
        
@@ -36,23 +42,10 @@ function App() {
        
        setExtractedData(response.data);
        setAppState('review');
-    } catch (error) {
+    } catch (error: any) {
        console.error("Error al extraer con el LLM", error);
-       // Simulamos un error controlado
-       setExtractedData({
-          tipo_comprobante: "B",
-          punto_venta: "0005",
-          numero_comprobante: "00009999",
-          fecha_emision: "2026-04-01",
-          cuit_emisor: "30111111110", // Invalido a proposito
-          moneda: "ARS",
-          importes: {
-             neto_gravado_21: 1000,
-             iva_21: 100, // Matematicamente invalido a proposito
-             total: 1210
-          }
-       });
-       setAppState('review');
+       alert("Error en el Servidor: " + (error.response?.data?.detail || error.message));
+       resetFlow();
     }
   };
 
@@ -95,83 +88,107 @@ function App() {
     }
   };
 
+  if (showLanding) {
+    return <LandingPage onEnterApp={() => setShowLanding(false)} />;
+  }
+
   return (
-    <div className="min-h-screen bg-[#F5F7F6] font-sans selection:bg-brand-sage selection:text-white pb-12">
+    <div className="min-h-screen bg-[#F5F7F6] font-sans selection:bg-brand-sage selection:text-white flex">
       
-      {/* Premium Corporate Navbar */}
-      <nav className="bg-brand-navy text-white px-8 py-4 shadow-md flex justify-between items-center sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <div className="bg-brand-accent p-2 rounded-lg">
-             <BarChart2 className="text-white w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">ComproScan <span className="text-brand-sage ml-1 font-medium">AR</span></h1>
-            <p className="text-[10px] text-gray-300 uppercase tracking-widest">Estudio Demo Partners</p>
-          </div>
-        </div>
+      {/* Sidebar Corporativo */}
+      <Sidebar currentMenu={appState} setMenu={(m) => setAppState(m as AppState)} />
+
+      {/* Contenido Principal */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
         
-        <div className="flex gap-4 items-center">
-          <button className="text-gray-300 hover:text-white transition-colors">
-            <FolderDown size={20} />
-          </button>
-          <button className="text-gray-300 hover:text-white transition-colors">
-            <Settings size={20} />
-          </button>
-          <div className="w-8 h-8 rounded-full bg-brand-sage border-2 border-white flex items-center justify-center font-bold text-sm">
-            SB
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-6xl mx-auto px-4 mt-12">
-         {/* Headers */}
-         <header className="mb-10 text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl font-extrabold text-brand-navy mb-3 tracking-tight">
-              Ingesta Contable
-            </h2>
-            <p className="text-brand-sage">
-              La IA extractora de datos de ComproScan transformará las fotos o CDs de tus clientes en exportaciones perfectas para tu ERP fiscal.
-            </p>
-         </header>
-
-         {/* Dynamic State Management */}
-         {appState === 'upload' && (
-           <Dropzone onFilesAdded={handleFilesAdded} />
-         )}
-
-         {(appState === 'processing' || appState === 'review') && (
-           <ReviewPanel 
-              imagePreviewUrl={previewUrl} 
-              extractedData={extractedData} 
-              isLoading={appState === 'processing'}
-              currentIndex={currentIndex}
-              totalFiles={filesToProcess.length}
-              onApprove={handleApprove}
-           />
-         )}
-
-         {appState === 'done' && (
-           <div className="w-full bg-white p-12 rounded-xl shadow-lg border border-gray-100 flex flex-col items-center animate-in zoom-in duration-500">
-             <div className="bg-green-100 p-4 rounded-full mb-6 relative">
-                <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-20"></div>
-                <FolderDown className="text-green-600 w-12 h-12" />
-             </div>
-             <h3 className="text-3xl font-bold text-brand-navy mb-3">¡Lote de {finalBatchData.length} Comprobantes Procesado!</h3>
-             <p className="text-gray-500 mb-8 max-w-md text-center">Toda la información fue validada contra los algoritmos matemáticos y está lista para ser ingerida por tu ERP contable favorito.</p>
-             <div className="flex gap-4 w-full max-w-md">
-                <button onClick={() => exportData('txt', 'holistor_citi_compras.txt')} className="flex-1 bg-white border-2 border-brand-navy text-brand-navy font-semibold py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                  TXT Holistor
-                </button>
-                <button onClick={() => exportData('csv', 'exportacion_general.csv')} className="flex-1 bg-brand-navy border-2 border-brand-navy text-white font-semibold py-3 rounded-xl hover:bg-[#003B53] transition-colors flex items-center justify-center gap-2">
-                  CSV Universal
-                </button>
-             </div>
-             <button onClick={resetFlow} className="mt-8 text-brand-sage hover:text-brand-navy font-medium underline transition-colors">
-                Subir otro lote de facturas
-             </button>
+        {/* Top Header Simple */}
+        <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-8 shrink-0">
+           <div className="flex items-center gap-4 text-gray-400 w-1/2">
+              <Search size={18} />
+              <input type="text" placeholder="Buscar comprobantes o CUIT..." className="bg-transparent outline-none text-sm w-full font-medium" />
            </div>
-         )}
-      </main>
+           <div className="flex items-center gap-4">
+              <button className="relative text-gray-400 hover:text-brand-navy">
+                 <Bell size={20} />
+                 <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+              </button>
+           </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto w-full p-6 lg:p-10">
+           {/* Dynamic State Management */}
+           {appState === 'home' && (
+             <div className="max-w-4xl mx-auto text-center mt-20">
+                <h2 className="text-4xl font-extrabold text-brand-navy mb-4">Bienvenido a ComproScan AR</h2>
+                <p className="text-gray-500 max-w-xl mx-auto mb-8">El Dashboard está siendo construido. Mientras tanto, presiona "Procesar Lotes" en la barra lateral para escanear facturas.</p>
+                <button onClick={() => setAppState('upload')} className="bg-brand-sage text-brand-navy font-bold px-8 py-3 rounded-lg shadow-md hover:bg-[#68A392] transition-colors">Empezar a Escanear</button>
+             </div>
+           )}
+
+           {appState === 'upload' && (
+             <div className="max-w-4xl mx-auto">
+               <header className="mb-8 text-center max-w-2xl mx-auto">
+                  <h2 className="text-3xl font-extrabold text-brand-navy mb-3 tracking-tight">Ingesta Contable</h2>
+                  <p className="text-brand-sage">Arrastra los PDFs o imágenes de facturación local.</p>
+               </header>
+               <Dropzone onFilesAdded={handleFilesAdded} />
+             </div>
+           )}
+
+           {(appState === 'processing' || appState === 'review') && (
+             <div className="max-w-[1400px] mx-auto">
+               <ReviewPanel 
+                  imagePreviewUrl={previewUrl} 
+                  extractedData={extractedData} 
+                  isLoading={appState === 'processing'}
+                  currentIndex={currentIndex}
+                  totalFiles={filesToProcess.length}
+                  onApprove={handleApprove}
+               />
+             </div>
+           )}
+
+           {appState === 'done' && (
+             <div className="max-w-3xl mx-auto mt-12 bg-white p-12 rounded-xl shadow-lg border border-gray-100 flex flex-col items-center animate-in zoom-in duration-500">
+               <div className="bg-green-100 p-4 rounded-full mb-6 relative">
+                  <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-20"></div>
+                  <FolderDown className="text-green-600 w-12 h-12" />
+               </div>
+               <h3 className="text-3xl font-bold text-brand-navy mb-3">¡Lote de {finalBatchData.length} Comprobantes Procesado!</h3>
+               <p className="text-gray-500 mb-8 text-center max-w-lg">Toda la información fue validada automáticamente y exportada de forma tabular.</p>
+               <div className="flex gap-4 w-full justify-center">
+                  <button onClick={() => exportData('txt', 'holistor_citi_compras.txt')} className="bg-white border-2 border-brand-navy text-brand-navy font-semibold px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+                    TXT Holistor
+                  </button>
+                  <button onClick={() => exportData('csv', 'exportacion_general.csv')} className="bg-brand-navy border-2 border-brand-navy text-white font-semibold px-6 py-3 rounded-xl hover:bg-[#003B53] transition-colors flex items-center justify-center gap-2">
+                    CSV Excel
+                  </button>
+               </div>
+               <button onClick={resetFlow} className="mt-8 text-brand-sage hover:text-brand-navy font-medium underline transition-colors">
+                  Procesar otro lote
+               </button>
+             </div>
+           )}
+
+           {appState === 'history' && (
+             <div className="h-full w-full max-w-[1600px] mx-auto">
+               <HistoryGrid />
+             </div>
+           )}
+
+           {appState === 'clients' && (
+             <div className="h-full w-full max-w-[1600px] mx-auto">
+               <ClientsPanel />
+             </div>
+           )}
+
+           {(appState === 'reports' || appState === 'settings') && (
+             <div className="text-center mt-20">
+                <h3 className="text-xl font-bold text-gray-400">Panel "{appState}" en construcción 🏗️</h3>
+             </div>
+           )}
+        </main>
+      </div>
 
     </div>
   );

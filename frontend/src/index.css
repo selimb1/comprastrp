@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-navy text-white px-6 py-2 rounded-lg font-medium shadow-md hover:bg-opacity-90 transition-all;
+  }
+  .input-field {
+    @apply w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-sage focus:border-transparent transition-all bg-white;
+  }
+}
+
+body {
+  background-color: #F5F7F6;
+  color: #0A1128;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #8BA09B;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #005477;
+}

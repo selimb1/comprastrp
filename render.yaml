@@ -1,0 +1,16 @@
+# render.yaml — Blueprint para desplegar el Backend en Render.com
+# Docs: https://docs.render.com/blueprint-spec
+
+services:
+  - type: web
+    name: comprascan-api
+    runtime: python
+    region: oregon
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false # Deberás configurarla manualmente en el dashboard de Render
+      - key: PYTHON_VERSION
+        value: "3.11"

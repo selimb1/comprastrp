@@ -8,6 +8,8 @@ import LandingPage from './components/LandingPage';
 import { FolderDown, Search, Bell } from 'lucide-react';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 type AppState = 'home' | 'upload' | 'processing' | 'review' | 'done' | 'history' | 'clients' | 'reports' | 'settings';
 
 function App() {
@@ -36,7 +38,7 @@ function App() {
        const formData = new FormData();
        formData.append('file', file);
        
-       const response = await axios.post('http://localhost:8000/api/v1/extract', formData, {
+       const response = await axios.post(`${API_URL}/api/v1/extract`, formData, {
          headers: { 'Content-Type': 'multipart/form-data' }
        });
        
@@ -72,7 +74,7 @@ function App() {
 
   const exportData = async (endpoint: string, filename: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/export/${endpoint}`, {
+      const response = await fetch(`${API_URL}/api/v1/export/${endpoint}`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(finalBatchData)

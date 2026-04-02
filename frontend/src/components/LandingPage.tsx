@@ -278,7 +278,7 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
               </Badge>
 
               <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-extrabold text-[#0A1128] leading-[1.08] tracking-[-0.03em] mb-5">
-                Dejá de tipear<br />
+                Dejá de cargar<br />
                 comprobantes.
               </h1>
 
@@ -457,38 +457,32 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
               <button
                 key={i}
                 onClick={() => setActiveStep(i)}
-                className={`text-left p-6 rounded-2xl border-2 transition-all duration-300 group ${
-                  activeStep === i
-                    ? 'bg-[#0A1128] border-[#0A1128] shadow-xl shadow-black/10 -translate-y-1'
-                    : 'bg-white border-[#E9ECEF] hover:border-[#ADB5BD] hover:shadow-md'
-                }`}
+                className={`text-left p-6 rounded-2xl border-2 transition-all duration-300 group ${activeStep === i
+                  ? 'bg-[#0A1128] border-[#0A1128] shadow-xl shadow-black/10 -translate-y-1'
+                  : 'bg-white border-[#E9ECEF] hover:border-[#ADB5BD] hover:shadow-md'
+                  }`}
               >
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors ${
-                  activeStep === i ? 'bg-[#005477] text-white' : 'bg-[#F1F3F5] text-[#495057] group-hover:bg-[#E9ECEF]'
-                }`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors ${activeStep === i ? 'bg-[#005477] text-white' : 'bg-[#F1F3F5] text-[#495057] group-hover:bg-[#E9ECEF]'
+                  }`}>
                   {step.icon}
                 </div>
-                <div className={`text-[11px] font-semibold uppercase tracking-[0.06em] mb-2 transition-colors ${
-                  activeStep === i ? 'text-[#005477]' : 'text-[#ADB5BD]'
-                }`}>
+                <div className={`text-[11px] font-semibold uppercase tracking-[0.06em] mb-2 transition-colors ${activeStep === i ? 'text-[#005477]' : 'text-[#ADB5BD]'
+                  }`}>
                   {step.tag}
                 </div>
-                <h3 className={`text-[16px] font-bold mb-2 transition-colors ${
-                  activeStep === i ? 'text-white' : 'text-[#0A1128]'
-                }`}>
+                <h3 className={`text-[16px] font-bold mb-2 transition-colors ${activeStep === i ? 'text-white' : 'text-[#0A1128]'
+                  }`}>
                   {step.title}
                 </h3>
-                <p className={`text-[13px] leading-relaxed transition-colors ${
-                  activeStep === i ? 'text-white/60' : 'text-[#868E96]'
-                }`}>
+                <p className={`text-[13px] leading-relaxed transition-colors ${activeStep === i ? 'text-white/60' : 'text-[#868E96]'
+                  }`}>
                   {step.desc}
                 </p>
                 {/* Step indicator */}
                 <div className={`mt-4 h-1 rounded-full overflow-hidden ${activeStep === i ? 'bg-white/20' : 'bg-[#F1F3F5]'}`}>
                   <div
-                    className={`h-full rounded-full transition-all duration-[3500ms] ease-linear ${
-                      activeStep === i ? 'bg-[#005477] w-full' : 'bg-transparent w-0'
-                    }`}
+                    className={`h-full rounded-full transition-all duration-[3500ms] ease-linear ${activeStep === i ? 'bg-[#005477] w-full' : 'bg-transparent w-0'
+                      }`}
                   />
                 </div>
               </button>
@@ -635,11 +629,10 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
-                className={`rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 ${
-                  plan.popular
-                    ? 'bg-[#0A1128] text-white border-2 border-[#0A1128] shadow-2xl shadow-black/15 relative'
-                    : 'bg-white border-2 border-[#E9ECEF] hover:border-[#ADB5BD] hover:shadow-lg hover:shadow-black/[0.04]'
-                }`}
+                className={`rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 ${plan.popular
+                  ? 'bg-[#0A1128] text-white border-2 border-[#0A1128] shadow-2xl shadow-black/15 relative'
+                  : 'bg-white border-2 border-[#E9ECEF] hover:border-[#ADB5BD] hover:shadow-lg hover:shadow-black/[0.04]'
+                  }`}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -683,11 +676,10 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
 
                 <button
                   onClick={onEnterApp}
-                  className={`w-full h-10 rounded-xl text-[13px] font-semibold transition-all ${
-                    plan.popular
-                      ? 'bg-white text-[#0A1128] hover:bg-[#F1F3F5]'
-                      : 'bg-[#F1F3F5] text-[#0A1128] hover:bg-[#E9ECEF] border border-[#E9ECEF]'
-                  }`}
+                  className={`w-full h-10 rounded-xl text-[13px] font-semibold transition-all ${plan.popular
+                    ? 'bg-white text-[#0A1128] hover:bg-[#F1F3F5]'
+                    : 'bg-[#F1F3F5] text-[#0A1128] hover:bg-[#E9ECEF] border border-[#E9ECEF]'
+                    }`}
                 >
                   {plan.price === 'A medida' ? 'Hablar con un asesor' : 'Empezar gratis'}
                 </button>
@@ -746,7 +738,7 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
 
         <div className="relative max-w-[560px] mx-auto px-5 text-center">
           <h2 className="text-[32px] sm:text-[44px] font-extrabold text-white tracking-[-0.03em] leading-[1.1] mb-4">
-            Dejá de tipear.<br />
+            Dejá de cargar.<br />
             <span className="text-[#005477]">Empezá a escanear.</span>
           </h2>
           <p className="text-[16px] text-white/50 mb-10 max-w-sm mx-auto">

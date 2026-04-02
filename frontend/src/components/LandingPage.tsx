@@ -1,375 +1,257 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  Camera, Zap, CheckCircle2, Download, ArrowRight, Star,
-  Shield, Clock, FileText, ChevronDown, ChevronUp, Menu, X,
-  TrendingUp, Users, AlertTriangle, BarChart3, Smartphone,
-  FileSpreadsheet, Lock, Headphones, Play, Check
+  ArrowRight, Play, Check, ChevronDown,
+  Clock, ShieldCheck, Zap, BarChart3, FileText, X,
+  Menu, Sparkles, Camera, ScanLine,
+  CheckCircle2, Download, Monitor
 } from 'lucide-react';
 
 interface LandingPageProps {
   onEnterApp: () => void;
 }
 
-// ────────────────────────────────────────────
-// DATA
-// ────────────────────────────────────────────
-const NAV_LINKS = [
-  { label: 'Inicio', href: '#hero' },
-  { label: 'Cómo funciona', href: '#como-funciona' },
-  { label: 'Precios', href: '#precios' },
-  { label: 'Blog', href: '#blog' },
-  { label: 'Soporte', href: '#soporte' },
-];
+
+
+/* ═══════════════════════════════════════════
+   DATA
+   ═══════════════════════════════════════════ */
 
 const STEPS = [
   {
-    number: '01',
-    icon: <Camera className="w-7 h-7" />,
-    title: 'Sacá la foto o subí el archivo',
-    desc: 'Fotografiá el comprobante con tu celular o arrastrá el PDF/imagen al panel. Facturas A, B, C, tickets, remitos, retenciones — todo.',
-    visual: '📸 Foto con el cel o drag & drop desde la PC',
+    icon: <Camera className="w-6 h-6" />,
+    title: 'Sacá la foto',
+    desc: 'Con tu celular o subí el PDF directo. Facturas A/B/C, tickets, remitos, retenciones.',
+    tag: 'Captura',
   },
   {
-    number: '02',
-    icon: <Zap className="w-7 h-7" />,
-    title: 'La IA extrae todos los datos',
-    desc: 'Nuestro motor de IA, entrenado en documentos fiscales argentinos, detecta automáticamente CUIT, fecha, importe, IVA, tipo de comprobante y más.',
-    visual: '🤖 Procesamiento en segundos',
+    icon: <ScanLine className="w-6 h-6" />,
+    title: 'La IA extrae todo',
+    desc: 'CUIT, fecha, importe, IVA, tipo de comprobante — en segundos, no en minutos.',
+    tag: 'Procesamiento',
   },
   {
-    number: '03',
-    icon: <CheckCircle2 className="w-7 h-7" />,
-    title: 'Revisás y corregís en segundos',
-    desc: 'Ves todos los campos pre-completados. Si algo no coincide, editás en el momento — sin fricciones, sin re-tipear todo desde cero.',
-    visual: '✏️ Revisión rápida campo por campo',
+    icon: <CheckCircle2 className="w-6 h-6" />,
+    title: 'Revisá rápido',
+    desc: 'Todo pre-completado. Corregís solo lo necesario con un par de clics.',
+    tag: 'Validación',
   },
   {
-    number: '04',
-    icon: <Download className="w-7 h-7" />,
-    title: 'Descargás el archivo listo para importar',
-    desc: 'Generamos el CSV, XLSX o TXT en el formato exacto de tu software contable. Importás directamente sin tocar nada más.',
-    visual: '📥 CSV · TXT Holistor · XLSX Excel',
+    icon: <Download className="w-6 h-6" />,
+    title: 'Exportá e importá',
+    desc: 'CSV, XLSX o TXT en el formato exacto de tu software. Listo para importación masiva.',
+    tag: 'Exportación',
   },
 ];
 
 const BENEFITS = [
   {
-    icon: <Clock className="w-6 h-6 text-brand-accent" />,
-    title: '70-80% menos tiempo de carga',
-    desc: 'Lo que antes te llevaba 3-4 horas ahora lo resolvés en 30-40 minutos. Documentado por estudios contables que ya nos usan.',
+    icon: <Clock className="w-5 h-5" />,
+    title: 'Más tiempo para asesorar',
+    desc: 'Reducí hasta un 80% la carga manual y dedicá esas horas a generar valor real para tus clientes.',
   },
   {
-    icon: <Shield className="w-6 h-6 text-brand-accent" />,
-    title: 'Menos errores, menos riesgo AFIP',
-    desc: 'La IA trabaja sobre el documento original, no sobre tu memoria. Validaciones automáticas de CUIT y montos antes de exportar.',
+    icon: <ShieldCheck className="w-5 h-5" />,
+    title: 'Menos errores, menos riesgo',
+    desc: 'Validación automática de CUIT y montos. Evitá multas y problemas con AFIP por errores de tipeo.',
   },
   {
-    icon: <FileSpreadsheet className="w-6 h-6 text-brand-accent" />,
-    title: 'Lotes masivos sin drama',
-    desc: 'Subís 50 comprobantes juntos, los revisás uno por uno con "Aprobar y Siguiente", y exportás todo de una. Perfecto para cierres de mes.',
+    icon: <Zap className="w-5 h-5" />,
+    title: 'Compatible con tu software',
+    desc: 'Exportación nativa para Tango, Holistor, Bejerman, Contabilium y más. Sin cambiar nada.',
   },
   {
-    icon: <Smartphone className="w-6 h-6 text-brand-accent" />,
-    title: 'Tickets y fotos difíciles no son problema',
-    desc: 'Optimizado para tickets térmicos desteñidos, fotos de comprobantes con poca luz o en ángulo. La IA hace el trabajo pesado.',
-  },
-  {
-    icon: <TrendingUp className="w-6 h-6 text-brand-accent" />,
-    title: 'Más tiempo para asesorar clientes',
-    desc: 'Cuando la carga mecánica baja, podés enfocarte en lo que da más valor: análisis, planificación y consultoría para tus clientes.',
-  },
-  {
-    icon: <Lock className="w-6 h-6 text-brand-accent" />,
-    title: 'Datos seguros, privacidad garantizada',
-    desc: 'Cumplimos la Ley 25.326 de Protección de Datos Personales. Tus comprobantes se procesan de forma segura y no compartimos nada con terceros.',
+    icon: <BarChart3 className="w-5 h-5" />,
+    title: 'Datos tributarios seguros',
+    desc: 'Cumplimos Ley 25.326. Tus comprobantes se procesan de forma segura, sin compartir con terceros.',
   },
 ];
 
-const COMPATIBLES = [
-  { name: 'Tango Gestión', color: '#005477' },
-  { name: 'Contabilium', color: '#005477' },
-  { name: 'Holistor', color: '#005477' },
-  { name: 'Bejerman', color: '#005477' },
-  { name: 'Calipso', color: '#005477' },
-  { name: 'Microsip', color: '#005477' },
-  { name: 'Excel / CSV', color: '#005477' },
-  { name: 'Genérico .TXT', color: '#005477' },
+const COMPATIBLE_SOFTWARE = [
+  'Tango Gestión', 'Holistor', 'Bejerman', 'Contabilium',
+  'Calipso', 'Microsip', 'Excel / CSV', 'Genérico TXT',
 ];
 
 const TESTIMONIALS = [
   {
     name: 'Dra. Cecilia Romero',
-    role: 'Socia · Estudio Romero & Asociados',
+    role: 'Socia — Romero & Asociados',
     city: 'Tucumán',
-    avatar: 'CR',
-    stars: 5,
-    text: 'Antes tardábamos 4 horas en cargar las facturas de un cliente grande. Ahora lo hacemos en 45 minutos. Fue un cambio inmediato desde el primer día. Lo recomendaría sin dudarlo a cualquier colega.',
+    initials: 'CR',
+    quote: 'Pasamos de 4 horas de carga manual a 45 minutos. El equipo no puede creer la diferencia.',
   },
   {
     name: 'Cr. Martín Gutiérrez',
     role: 'Contador independiente',
     city: 'Córdoba',
-    avatar: 'MG',
-    stars: 5,
-    text: 'Trabajo solo y tengo más de 20 clientes. ComproScan AR me salvó los cierres de mes. Los tickets térmicos que antes eran un dolor de cabeza ahora los proceso en masa sin problemas. Sencillamente brillante.',
+    initials: 'MG',
+    quote: 'Con 20 clientes y trabajando solo, los cierres de mes eran un caos. Ahora proceso todo en la mitad de tiempo.',
   },
   {
     name: 'Lic. Valeria Pereyra',
-    role: 'Directora · Contabilidad Digital SRL',
+    role: 'Directora — Contabilidad Digital',
     city: 'CABA',
-    avatar: 'VP',
-    stars: 5,
-    text: 'Integramos con Holistor en el primer día. Mi equipo de 5 personas redujo el tiempo de ingreso de datos a la mitad. La seguridad de los datos fue clave para convencer a los socios — cumplen con la Ley 25.326.',
-  },
-  {
-    name: 'Cr. Fernando Lamas',
-    role: 'Estudio Lamas & Castro',
-    city: 'Mendoza',
-    avatar: 'FL',
-    stars: 5,
-    text: 'Lo probé con la prueba gratuita y al segundo día ya estaba convencido. La diferencia de tiempo es real. Y lo que más me gustó: no tengo que cambiar ni un solo proceso interno, solo agrego ComproScan antes del import.',
+    initials: 'VP',
+    quote: 'Integramos con Holistor el primer día. Mi equipo de 5 personas redujo el tiempo de ingreso a la mitad.',
   },
 ];
 
 const PLANS = [
   {
     name: 'Starter',
-    subtitle: 'Ideal para contadores independientes',
-    price: '$12.900',
-    period: '/mes',
-    features: [
-      '100 comprobantes / mes',
-      '1 usuario',
-      'Exportación CSV y XLSX',
-      'Soporte por email',
-      'Historial 90 días',
-    ],
-    cta: 'Empezar gratis',
+    desc: 'Contadores independientes',
+    price: '12.900',
+    features: ['100 comprobantes/mes', '1 usuario', 'CSV y XLSX', 'Soporte email', 'Historial 90 días'],
     popular: false,
-    color: 'border-gray-200',
   },
   {
     name: 'Profesional',
-    subtitle: 'Para estudios de hasta 10 personas',
-    price: '$28.900',
-    period: '/mes',
-    features: [
-      '500 comprobantes / mes',
-      '5 usuarios',
-      'Exportación CSV, XLSX, TXT',
-      'Soporte Holistor y Bejerman',
-      'Lotes masivos ilimitados',
-      'Soporte prioritario',
-      'Historial 1 año',
-    ],
-    cta: 'Probar 30 días gratis',
+    desc: 'Estudios de hasta 10 personas',
+    price: '28.900',
+    features: ['500 comprobantes/mes', '5 usuarios', 'CSV, XLSX, TXT', 'Holistor + Bejerman', 'Lotes masivos', 'Soporte prioritario'],
     popular: true,
-    color: 'border-brand-accent',
   },
   {
     name: 'Enterprise',
-    subtitle: 'Equipos grandes y despachos completos',
+    desc: 'Despachos y equipos grandes',
     price: 'A medida',
-    period: '',
-    features: [
-      'Comprobantes ilimitados',
-      'Usuarios ilimitados',
-      'Todos los formatos de exportación',
-      'Integración API propia',
-      'Onboarding personalizado',
-      'SLA garantizado',
-      'Facturación en cuenta corriente',
-    ],
-    cta: 'Hablar con un asesor',
+    features: ['Comprobantes ilimitados', 'Usuarios ilimitados', 'Todos los formatos', 'API propia', 'Onboarding dedicado', 'SLA garantizado'],
     popular: false,
-    color: 'border-gray-200',
   },
 ];
 
 const FAQS = [
   {
-    q: '¿Qué tan precisa es la extracción? ¿Me puedo fiar solo de la IA?',
-    a: 'La precisión ronda el 90-95% en documentos claros. Por eso siempre te mostramos los datos para que los revisés antes de exportar — el objetivo es que no tengas que tipear, no eliminar tu criterio profesional. En lotes con fotos de buena calidad, muchas veces no tenés que tocar nada.',
+    q: '¿Qué tan precisa es la extracción?',
+    a: 'Promedio 94% en documentos claros. Siempre revisás antes de exportar — el objetivo es eliminar el tipeo, no tu criterio profesional.',
   },
   {
-    q: '¿Qué pasa si la foto del comprobante salió movida o el ticket está muy borroso?',
-    a: 'Nuestro motor de IA tolera fotos en ángulo, con poca luz o tickets térmicos desteñidos mejor que la mayoría. En los casos donde la calidad es muy baja, te avisamos qué campos no leímos con certeza para que los completés vos. Siempre tenés control total.',
+    q: '¿Funciona con tickets térmicos desteñidos o fotos borrosas?',
+    a: 'Sí. Nuestro motor está optimizado para condiciones reales: fotos en ángulo, poca luz, tickets viejos. Donde algo no se lee con certeza, te avisamos para que completes.',
   },
   {
-    q: '¿Funciona con el software que ya uso (Tango, Holistor, Excel, etc.)?',
-    a: 'Sí. Generamos el archivo en el formato exacto que cada software requiere. Para Tango exportamos CSV con las columnas en el orden correcto; para Holistor y Bejerman generamos el TXT de CITI Compras; para el resto, CSV/XLSX genérico. Si usás otro sistema, contanos y lo evaluamos.',
+    q: '¿Tengo que cambiar mi software contable actual?',
+    a: 'No. Generamos el archivo en el formato exacto de tu software (Tango, Holistor, Bejerman, etc). Solo importás y listo.',
   },
   {
-    q: '¿Mis datos están seguros? ¿Compartís la info con terceros?',
-    a: 'Cumplimos la Ley 25.326 de Protección de Datos Personales de Argentina. Los comprobantes se procesan en servidores seguros y no son compartidos con ningún tercero. Una vez que exportás el archivo, podés solicitar la eliminación permanente de esos datos.',
+    q: '¿Mis datos están seguros?',
+    a: 'Cumplimos Ley 25.326. Servidores seguros, sin compartir con terceros. Podés solicitar la eliminación permanente en cualquier momento.',
   },
   {
-    q: '¿Necesito instalar algo en mi computadora o en el servidor del estudio?',
-    a: 'No, ComproScan AR es 100% web (SaaS). Entrás desde cualquier navegador — PC, Mac, tablet o celular. Sin instalaciones, sin licencias por equipo, sin IT. Actualizaciones automáticas incluidas.',
+    q: '¿Necesito instalar algo?',
+    a: 'No. ComproScan AR es 100% web. Entrás desde cualquier navegador, en cualquier dispositivo. Sin licencias, sin IT.',
   },
   {
-    q: '¿Puedo probar antes de pagar? ¿Necesito tarjeta de crédito?',
-    a: '¡Por supuesto! Los 30 días de prueba son completamente gratis y no pedimos tarjeta de crédito. Cargás comprobantes reales, ves el resultado y decidís. Si no te convence, no pagás nada. Así de simple.',
+    q: '¿Puedo probar gratis sin tarjeta?',
+    a: '30 días gratis, sin tarjeta, sin compromiso. Procesás comprobantes reales y decidís. Si no te convence, no pagás nada.',
   },
 ];
 
-// ────────────────────────────────────────────
-// SUB-COMPONENTS
-// ────────────────────────────────────────────
+/* ═══════════════════════════════════════════
+   COMPONENTS
+   ═══════════════════════════════════════════ */
 
-function CounterBadge({ label, value }: { label: string; value: string }) {
+function Badge({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className="flex flex-col items-center gap-1">
-      <span className="text-3xl font-extrabold text-brand-navy">{value}</span>
-      <span className="text-sm text-gray-500 text-center">{label}</span>
-    </div>
-  );
-}
-
-function StarRow({ count }: { count: number }) {
-  return (
-    <div className="flex gap-0.5">
-      {Array.from({ length: count }).map((_, i) => (
-        <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-      ))}
-    </div>
-  );
-}
-
-function SectionBadge({ text }: { text: string }) {
-  return (
-    <span className="inline-flex items-center gap-2 bg-brand-accent/10 text-brand-accent font-semibold text-xs uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
-      <span className="w-1.5 h-1.5 rounded-full bg-brand-accent inline-block" />
-      {text}
+    <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] px-3 py-1 rounded-full ${className}`}>
+      {children}
     </span>
   );
 }
 
-function CTAButton({
-  children,
-  onClick,
-  variant = 'primary',
-  size = 'md',
-  className = '',
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  variant?: 'primary' | 'secondary' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
-}) {
-  const base = 'font-bold rounded-xl transition-all duration-200 flex items-center gap-2 justify-center cursor-pointer';
-  const sizes = { sm: 'px-5 py-2.5 text-sm', md: 'px-6 py-3 text-base', lg: 'px-8 py-4 text-lg' };
-  const variants = {
-    primary: 'bg-brand-accent text-white shadow-lg shadow-brand-accent/30 hover:bg-[#003B53] hover:shadow-brand-accent/50 hover:-translate-y-0.5 active:translate-y-0',
-    secondary: 'bg-white text-brand-navy border-2 border-brand-navy/20 hover:border-brand-navy hover:bg-brand-light',
-    ghost: 'text-brand-accent hover:text-brand-navy underline underline-offset-4',
-  };
-  return (
-    <button className={`${base} ${sizes[size]} ${variants[variant]} ${className}`} onClick={onClick}>
-      {children}
-    </button>
-  );
-}
-
-// ────────────────────────────────────────────
-// MAIN COMPONENT
-// ────────────────────────────────────────────
+/* ═══════════════════════════════════════════
+   MAIN
+   ═══════════════════════════════════════════ */
 
 export default function LandingPage({ onEnterApp }: LandingPageProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
-  const [showVideo, setShowVideo] = useState(false);
-  const heroRef = useRef<HTMLDivElement>(null);
+  const [videoOpen, setVideoOpen] = useState(false);
+  const [form, setForm] = useState({ name: '', email: '' });
+  const [activeStep, setActiveStep] = useState(0);
+  const stepsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handler);
-    return () => window.removeEventListener('scroll', handler);
+    const h = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', h, { passive: true });
+    return () => window.removeEventListener('scroll', h);
   }, []);
 
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id.replace('#', ''));
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-    setMobileMenuOpen(false);
+  // Auto-cycle steps
+  useEffect(() => {
+    const t = setInterval(() => setActiveStep((s) => (s + 1) % 4), 3500);
+    return () => clearInterval(t);
+  }, []);
+
+  const scroll = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    setMobileOpen(false);
   };
 
   return (
-    <div className="w-full min-h-screen font-sans bg-white text-brand-navy antialiased overflow-x-hidden">
+    <div className="w-full min-h-screen bg-[#FAFBFC] text-[#212529] antialiased overflow-x-hidden" style={{ fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
 
-      {/* ─── NAVBAR ─── */}
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100' : 'bg-transparent'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      {/* ━━━ NAVBAR ━━━ */}
+      <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-xl border-b border-black/[0.04] shadow-[0_1px_3px_rgba(0,0,0,0.04)]' : ''}`}>
+        <div className="max-w-[1200px] mx-auto h-[60px] flex items-center justify-between px-5">
           {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-brand-accent rounded-lg flex items-center justify-center shadow-md">
-              <FileText className="w-4 h-4 text-white" />
+          <a href="#" className="flex items-center gap-2 group" onClick={(e) => { e.preventDefault(); scroll('hero'); }}>
+            <div className="w-7 h-7 rounded-lg bg-[#005477] flex items-center justify-center group-hover:scale-105 transition-transform">
+              <FileText className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="font-extrabold text-brand-navy text-lg tracking-tight">
-              ComproScan <span className="text-brand-accent">AR</span>
+            <span className="font-bold text-[15px] text-[#0A1128] tracking-tight">
+              ComproScan<span className="text-[#005477] ml-0.5">AR</span>
             </span>
-          </div>
+          </a>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-6">
-            {NAV_LINKS.map((l) => (
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-8">
+            {[['Cómo funciona', 'como-funciona'], ['Precios', 'precios'], ['Recursos', 'faq']].map(([label, id]) => (
               <button
-                key={l.label}
-                onClick={() => scrollTo(l.href)}
-                className="text-sm font-medium text-gray-600 hover:text-brand-navy transition-colors"
+                key={id}
+                onClick={() => scroll(id)}
+                className="text-[13px] font-medium text-[#6C757D] hover:text-[#0A1128] transition-colors"
               >
-                {l.label}
+                {label}
               </button>
             ))}
           </nav>
 
-          {/* Desktop CTA */}
+          {/* Desktop CTAs */}
           <div className="hidden md:flex items-center gap-3">
             <button
               onClick={onEnterApp}
-              className="text-sm font-semibold text-gray-600 hover:text-brand-navy transition-colors px-4 py-2"
+              className="text-[13px] font-medium text-[#6C757D] hover:text-[#0A1128] transition-colors px-3 py-1.5"
             >
               Iniciar sesión
             </button>
-            <CTAButton onClick={onEnterApp} size="sm">
+            <button
+              onClick={onEnterApp}
+              className="h-9 px-4 bg-[#0A1128] hover:bg-[#1A2340] text-white text-[13px] font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-black/10 hover:-translate-y-px active:translate-y-0"
+            >
               Probar gratis
-              <ArrowRight className="w-4 h-4" />
-            </CTAButton>
+            </button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-brand-navy p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Menú"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {/* Mobile hamburger */}
+          <button className="md:hidden p-2 text-[#495057]" onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
-        {/* Mobile Dropdown */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-100 px-4 py-4 flex flex-col gap-3 shadow-lg animate-fade-in">
-            {NAV_LINKS.map((l) => (
-              <button
-                key={l.label}
-                onClick={() => scrollTo(l.href)}
-                className="text-left text-sm font-medium text-gray-700 hover:text-brand-accent py-2 border-b border-gray-50 last:border-0"
-              >
-                {l.label}
+        {/* Mobile dropdown */}
+        {mobileOpen && (
+          <div className="md:hidden bg-white border-t border-black/[0.04] px-5 py-5 space-y-1 shadow-xl animate-in slide-in-from-top-2 duration-200">
+            {[['Cómo funciona', 'como-funciona'], ['Precios', 'precios'], ['Recursos', 'faq']].map(([label, id]) => (
+              <button key={id} onClick={() => scroll(id)} className="block w-full text-left text-sm font-medium text-[#495057] hover:text-[#0A1128] py-2.5 transition-colors">
+                {label}
               </button>
             ))}
-            <div className="pt-2 flex flex-col gap-2">
-              <CTAButton onClick={onEnterApp} size="sm" className="w-full">
-                Probar gratis — sin tarjeta
-              </CTAButton>
-              <button onClick={onEnterApp} className="text-sm text-center text-gray-500 hover:text-brand-navy py-2">
+            <div className="pt-3 border-t border-black/[0.04] mt-2 space-y-2">
+              <button onClick={onEnterApp} className="w-full h-10 bg-[#0A1128] text-white text-sm font-semibold rounded-lg">
+                Probar gratis
+              </button>
+              <button onClick={onEnterApp} className="w-full text-center text-sm text-[#868E96] py-2">
                 Iniciar sesión
               </button>
             </div>
@@ -377,638 +259,582 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
         )}
       </header>
 
-      {/* ─── HERO ─── */}
-      <section
-        id="hero"
-        ref={heroRef}
-        className="relative min-h-screen flex flex-col items-center justify-center text-center pt-16 pb-24 px-4 overflow-hidden"
-      >
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#F5F7F6] via-white to-[#E8F0F5] pointer-events-none" />
-        {/* Subtle grid pattern */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.04]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='g' width='60' height='60' patternUnits='userSpaceOnUse'%3E%3Cpath d='M 60 0 L 0 0 0 60' fill='none' stroke='%230A1128' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23g)'/%3E%3C/svg%3E")`,
-          }}
-        />
-        {/* Accent blob */}
-        <div className="absolute top-1/4 right-0 w-96 h-96 bg-brand-accent/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 left-0 w-64 h-64 bg-brand-sage/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-4xl mx-auto">
-          {/* Trust badge */}
-          <div className="inline-flex items-center gap-2 bg-white border border-gray-200 shadow-sm text-sm font-medium text-gray-700 px-4 py-1.5 rounded-full mb-8 animate-slide-up">
-            <span className="text-green-500 font-bold">✓</span>
-            Hecho por contadores para contadores argentinos
-          </div>
-
-          {/* Main headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-brand-navy leading-[1.1] tracking-tight mb-6 animate-slide-up animation-delay-100">
-            Foto al comprobante →<br />
-            <span className="relative inline-block">
-              <span className="text-brand-accent">listo para importar</span>
-              <svg
-                className="absolute -bottom-1 left-0 w-full"
-                viewBox="0 0 300 8"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M1 6C50 2 100 0 150 2C200 4 250 6 299 4"
-                  stroke="#8BA09B"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>{' '}
-            en segundos.
-          </h1>
-
-          {/* Subheadline */}
-          <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-10 animate-slide-up animation-delay-200">
-            ComproScan AR usa IA especializada en documentos fiscales argentinos para extraer automáticamente los datos de tus facturas, tickets y comprobantes.{' '}
-            <strong className="text-brand-navy">Sin cambiar tu software actual. Sin instalar nada.</strong>
-          </p>
-
-          {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 animate-slide-up animation-delay-300">
-            <CTAButton onClick={onEnterApp} size="lg">
-              🚀 Probar gratis 30 días
-              <ArrowRight className="w-5 h-5" />
-            </CTAButton>
-            <button
-              onClick={() => setShowVideo(true)}
-              className="group flex items-center gap-3 justify-center bg-white border-2 border-gray-200 text-brand-navy font-bold px-8 py-4 rounded-xl hover:border-brand-navy transition-all text-lg"
-            >
-              <div className="w-9 h-9 rounded-full bg-brand-accent flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                <Play className="w-4 h-4 text-white fill-white" />
-              </div>
-              Ver demo de 90 segundos
-            </button>
-          </div>
-
-          {/* No credit card note */}
-          <p className="text-sm text-gray-400 mb-14 animate-slide-up animation-delay-400">
-            Sin tarjeta de crédito · Sin compromiso · Cancelás cuando querés
-          </p>
-
-          {/* Social proof numbers */}
-          <div className="flex flex-wrap justify-center gap-10 pt-10 border-t border-gray-100 animate-slide-up animation-delay-500">
-            <CounterBadge value="70-80%" label="Reducción de tiempo promedio" />
-            <CounterBadge value="+500" label="Contadores ya lo usan" />
-            <CounterBadge value="15 seg" label="Tiempo de procesamiento promedio" />
-            <CounterBadge value="Ley 25.326" label="Cumplimiento de privacidad" />
-          </div>
+      {/* ━━━ HERO ━━━ */}
+      <section id="hero" className="relative pt-[120px] pb-24 lg:pt-[140px] lg:pb-32">
+        {/* Subtle gradient backdrop */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full opacity-[0.07]" style={{ background: 'radial-gradient(circle, #005477 0%, transparent 70%)' }} />
+          <div className="absolute top-1/2 -left-32 w-[400px] h-[400px] rounded-full opacity-[0.04]" style={{ background: 'radial-gradient(circle, #34C759 0%, transparent 70%)' }} />
         </div>
-      </section>
 
-      {/* Video Modal */}
-      {showVideo && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
-          onClick={() => setShowVideo(false)}
-        >
-          <div
-            className="bg-brand-navy rounded-2xl overflow-hidden w-full max-w-3xl aspect-video flex items-center justify-center relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="absolute top-4 right-4 text-white/70 hover:text-white"
-              onClick={() => setShowVideo(false)}
-            >
-              <X className="w-6 h-6" />
-            </button>
-            <div className="text-center text-white p-12">
-              <div className="w-20 h-20 rounded-full bg-brand-accent/20 flex items-center justify-center mx-auto mb-6">
-                <Play className="w-10 h-10 text-brand-accent fill-brand-accent" />
+        <div className="relative max-w-[1200px] mx-auto px-5">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left — Copy */}
+            <div className="max-w-xl">
+              <Badge className="bg-[#E8F8ED] text-[#1B8C3A] mb-6">
+                <Sparkles className="w-3 h-3" />
+                IA para documentos fiscales argentinos
+              </Badge>
+
+              <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-extrabold text-[#0A1128] leading-[1.08] tracking-[-0.03em] mb-5">
+                Dejá de tipear<br />
+                comprobantes.
+              </h1>
+
+              <p className="text-[17px] sm:text-[18px] text-[#6C757D] leading-relaxed mb-8 max-w-md">
+                Sacá una foto, la IA extrae los datos y vos descargás el archivo listo para importar en tu software contable.{' '}
+                <span className="text-[#495057] font-medium">Sin cambiar tu sistema actual.</span>
+              </p>
+
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-3 mb-8">
+                <button
+                  onClick={onEnterApp}
+                  className="group h-12 px-7 bg-[#005477] hover:bg-[#003B53] text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-[#005477]/20 hover:shadow-xl hover:shadow-[#005477]/30 hover:-translate-y-px active:translate-y-0 flex items-center gap-2 justify-center text-[15px]"
+                >
+                  Comenzá tu prueba gratis
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+                <button
+                  onClick={() => setVideoOpen(true)}
+                  className="group h-12 px-6 bg-white border border-[#E9ECEF] hover:border-[#ADB5BD] text-[#495057] font-medium rounded-xl transition-all flex items-center gap-2.5 justify-center text-[15px] hover:shadow-sm"
+                >
+                  <div className="w-7 h-7 rounded-full bg-[#0A1128] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Play className="w-3 h-3 text-white fill-white ml-0.5" />
+                  </div>
+                  Ver demo — 60 seg
+                </button>
               </div>
-              <h3 className="text-2xl font-bold mb-2">Demo en vivo — 90 segundos</h3>
-              <p className="text-white/60">El video demo estará disponible muy pronto. ¡Probalo gratis mientras tanto!</p>
-              <CTAButton onClick={onEnterApp} size="md" className="mt-6 mx-auto">
-                Ir al demo real ahora
-              </CTAButton>
+
+              <p className="text-[12px] text-[#ADB5BD]">
+                30 días gratis · Sin tarjeta de crédito · Cancelás cuando quieras
+              </p>
+            </div>
+
+            {/* Right — Product Preview */}
+            <div className="relative lg:pl-4">
+              {/* Main dashboard preview */}
+              <div className="relative bg-white rounded-2xl border border-black/[0.06] shadow-2xl shadow-black/[0.08] overflow-hidden">
+                {/* Faux browser chrome */}
+                <div className="h-9 bg-[#F8F9FA] border-b border-black/[0.04] flex items-center px-4 gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#28C840]" />
+                  <div className="flex-1 mx-8">
+                    <div className="h-5 bg-white rounded-md border border-black/[0.06] flex items-center justify-center">
+                      <span className="text-[10px] text-[#ADB5BD]">app.comproscan.ar</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dashboard content mockup */}
+                <div className="p-5 bg-[#F5F7F6]">
+                  {/* Top bar */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <div className="text-[13px] font-bold text-[#0A1128]">Ingesta Contable</div>
+                      <div className="text-[10px] text-[#ADB5BD] mt-0.5">3 comprobantes procesados</div>
+                    </div>
+                    <div className="h-7 px-3 bg-[#005477] text-white text-[10px] font-semibold rounded-md flex items-center gap-1">
+                      <Download className="w-3 h-3" /> Exportar CSV
+                    </div>
+                  </div>
+
+                  {/* Review card mockup */}
+                  <div className="bg-white rounded-xl border border-black/[0.06] p-4 mb-3">
+                    <div className="flex items-start gap-4">
+                      {/* Image placeholder */}
+                      <div className="w-24 h-32 bg-gradient-to-br from-[#E8F0F5] to-[#F1F3F5] rounded-lg flex flex-col items-center justify-center border border-black/[0.04] shrink-0">
+                        <FileText className="w-6 h-6 text-[#ADB5BD] mb-1" />
+                        <span className="text-[8px] text-[#ADB5BD] font-medium">FACTURA A</span>
+                      </div>
+                      {/* Fields */}
+                      <div className="flex-1 space-y-2.5">
+                        {[
+                          ['Emisor', 'Distribuidora Norte SRL'],
+                          ['CUIT', '30-71659820-4'],
+                          ['Fecha', '28/03/2026'],
+                          ['Neto Gravado', '$148.350,00'],
+                          ['IVA 21%', '$31.153,50'],
+                          ['Total', '$179.503,50'],
+                        ].map(([k, v]) => (
+                          <div key={k} className="flex items-center justify-between">
+                            <span className="text-[10px] text-[#868E96] font-medium">{k}</span>
+                            <span className="text-[11px] text-[#0A1128] font-semibold bg-[#F8F9FA] px-2 py-0.5 rounded">{v}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <div className="flex-1 h-8 bg-[#E8F8ED] text-[#1B8C3A] text-[10px] font-bold rounded-lg flex items-center justify-center gap-1">
+                        <Check className="w-3 h-3" /> Aprobar
+                      </div>
+                      <div className="h-8 px-3 bg-[#F8F9FA] text-[#868E96] text-[10px] font-medium rounded-lg flex items-center">
+                        Editar
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Progress */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-1.5 bg-[#E9ECEF] rounded-full overflow-hidden">
+                      <div className="w-2/3 h-full bg-[#005477] rounded-full" />
+                    </div>
+                    <span className="text-[10px] text-[#868E96] font-medium">2 de 3</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating phone mockup */}
+              <div className="absolute -bottom-6 -left-8 w-[140px] bg-white rounded-2xl border border-black/[0.06] shadow-xl shadow-black/[0.08] overflow-hidden transform rotate-[-6deg] hidden lg:block">
+                <div className="h-5 bg-[#0A1128] flex items-center justify-center">
+                  <div className="w-12 h-1.5 bg-white/20 rounded-full" />
+                </div>
+                <div className="p-3 bg-[#F5F7F6]">
+                  <div className="w-full aspect-[3/4] bg-gradient-to-br from-[#E8F0F5] to-white rounded-lg border border-black/[0.04] flex flex-col items-center justify-center">
+                    <Camera className="w-6 h-6 text-[#005477] mb-1.5" />
+                    <span className="text-[8px] text-[#868E96] font-semibold">Capturar</span>
+                  </div>
+                  <div className="mt-2 h-5 bg-[#005477] rounded-md flex items-center justify-center">
+                    <span className="text-[7px] text-white font-bold">ESCANEAR</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Processing badge */}
+              <div className="absolute -top-3 -right-3 bg-white rounded-xl border border-black/[0.06] shadow-lg shadow-black/[0.06] px-3.5 py-2.5 hidden lg:flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-[#E8F8ED] flex items-center justify-center">
+                  <Zap className="w-3 h-3 text-[#34C759]" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-[#0A1128]">IA procesando...</div>
+                  <div className="text-[9px] text-[#34C759] font-medium">Factura A detectada</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      </section>
 
-      {/* ─── PROBLEMA ─── */}
-      <section id="problema" className="py-24 bg-brand-navy text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <SectionBadge text="El problema real" />
-            <h2 className="text-3xl sm:text-4xl font-extrabold mb-6 text-white">
-              ¿Todavía perdés horas tipeando comprobantes?
-            </h2>
-            <p className="text-lg text-white/70 max-w-2xl mx-auto">
-              No sos el único. Es el pan de cada día para miles de contadores en Argentina.
-            </p>
-          </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+      {/* ━━━ TRUST BAR ━━━ */}
+      <section className="py-5 border-y border-black/[0.04] bg-white">
+        <div className="max-w-[1200px] mx-auto px-5">
+          <div className="flex flex-wrap justify-center gap-x-10 gap-y-4 items-center">
             {[
-              {
-                icon: <Clock className="w-7 h-7 text-red-400" />,
-                title: 'Horas perdidas cada semana',
-                desc: 'Tipear factura por factura, dato por dato: CUIT, fecha, importe, IVA, tipo. Trabajo repetitivo que no le agrega valor a nadie.',
-              },
-              {
-                icon: <AlertTriangle className="w-7 h-7 text-amber-400" />,
-                title: 'Errores que cuestan caro',
-                desc: 'Un cero de más, un CUIT mal tipeado, un IVA incorrecto. Los errores en la carga manual pueden traer problemas con AFIP.',
-              },
-              {
-                icon: <BarChart3 className="w-7 h-7 text-red-400" />,
-                title: 'Cierres de mes caóticos',
-                desc: 'Los últimos días del mes son un caos: clientes mandando comprobantes en papel, por WhatsApp, en PDF. Todo para cargar a mano.',
-              },
-              {
-                icon: <Users className="w-7 h-7 text-amber-400" />,
-                title: 'Tiempo que le robás a tus clientes',
-                desc: 'Cada hora que pasás cargando datos es una hora que no estás asesorando, planificando y dando el valor que tus clientes merecen.',
-              },
-              {
-                icon: <FileText className="w-7 h-7 text-red-400" />,
-                title: 'Tickets térmicos imposibles',
-                desc: 'Tickets desteñidos, fotografiados en ángulo, con poca luz. El OCR genérico no los lee. Terminás tipeando igual.',
-              },
-              {
-                icon: <Headphones className="w-7 h-7 text-amber-400" />,
-                title: 'Estrés acumulado, sin fin',
-                desc: 'La carga manual no escala. A más clientes, más horas de ingreso. El modelo no cierra — y el agotamiento se nota.',
-              },
-            ].map((pain, i) => (
-              <div
-                key={i}
-                className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors"
-              >
-                <div className="mb-4">{pain.icon}</div>
-                <h3 className="font-bold text-white mb-2">{pain.title}</h3>
-                <p className="text-white/60 text-sm leading-relaxed">{pain.desc}</p>
+              { value: '80%', label: 'menos tiempo de carga' },
+              { value: '94%', label: 'precisión promedio' },
+              { value: '15 seg', label: 'por comprobante' },
+              { value: '+500', label: 'contadores en Argentina' },
+            ].map((m) => (
+              <div key={m.label} className="flex items-center gap-2.5">
+                <span className="text-[22px] font-extrabold text-[#0A1128] tracking-tight">{m.value}</span>
+                <span className="text-[12px] text-[#868E96] font-medium leading-tight">{m.label}</span>
               </div>
             ))}
-          </div>
-
-          {/* Transition */}
-          <div className="text-center bg-brand-accent/20 border border-brand-accent/30 rounded-2xl p-8">
-            <p className="text-xl font-bold text-white mb-2">
-              Imaginá terminar la carga de comprobantes en minutos, no en horas.
-            </p>
-            <p className="text-white/70 mb-6">
-              Sin cambiar tu software. Sin aprender nada nuevo. Solo sacando una foto.
-            </p>
-            <CTAButton onClick={onEnterApp} size="md" className="mx-auto">
-              Quiero probar esto ahora
-              <ArrowRight className="w-5 h-5" />
-            </CTAButton>
           </div>
         </div>
       </section>
 
-      {/* ─── CÓMO FUNCIONA ─── */}
-      <section id="como-funciona" className="py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+
+      {/* ━━━ CÓMO FUNCIONA ━━━ */}
+      <section id="como-funciona" className="py-24 lg:py-32 bg-[#FAFBFC]">
+        <div className="max-w-[1200px] mx-auto px-5">
           <div className="text-center mb-16">
-            <SectionBadge text="Cómo funciona" />
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy mb-4">
-              De la foto al archivo importable en 4 pasos
+            <Badge className="bg-[#005477]/[0.08] text-[#005477] mb-4">Cómo funciona</Badge>
+            <h2 className="text-[32px] sm:text-[40px] font-extrabold text-[#0A1128] tracking-[-0.02em] mb-3">
+              De la foto al archivo importable
             </h2>
-            <p className="text-lg text-gray-500 max-w-xl mx-auto">
-              Sin curvas de aprendizaje. Sin cambios de proceso. Solo añadís este paso antes de importar a tu software.
+            <p className="text-[16px] text-[#868E96] max-w-md mx-auto">
+              Sin curvas de aprendizaje. Sin cambiar tu proceso. Cuatro pasos simples.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
-            {/* Connector line (desktop) */}
-            <div className="hidden lg:block absolute top-12 left-[12.5%] right-[12.5%] h-0.5 bg-gradient-to-r from-brand-accent/0 via-brand-accent/30 to-brand-accent/0 z-0" />
-
+          {/* Steps — Interactive Cards */}
+          <div ref={stepsRef} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {STEPS.map((step, i) => (
-              <div key={i} className="relative z-10 group">
-                <div className="bg-brand-light border border-gray-100 rounded-2xl p-6 h-full text-center hover:shadow-xl hover:shadow-brand-accent/10 hover:-translate-y-1 transition-all duration-300">
-                  {/* Step number + icon */}
-                  <div className="relative mx-auto w-16 h-16 mb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-brand-accent flex items-center justify-center shadow-lg shadow-brand-accent/30 text-white group-hover:scale-110 transition-transform duration-300">
-                      {step.icon}
-                    </div>
-                    <span className="absolute -top-2 -right-2 w-6 h-6 bg-brand-navy text-white text-xs font-extrabold rounded-full flex items-center justify-center">
-                      {i + 1}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-brand-navy mb-3 text-lg leading-snug">{step.title}</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed mb-4">{step.desc}</p>
-                  <span className="text-xs font-medium text-brand-accent bg-brand-accent/10 px-3 py-1 rounded-full">
-                    {step.visual}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-12">
-            <CTAButton onClick={onEnterApp} size="lg">
-              Probá el flujo completo gratis
-              <ArrowRight className="w-5 h-5" />
-            </CTAButton>
-            <p className="mt-3 text-sm text-gray-400">No hace falta tarjeta. En 30 segundos ya estás procesando.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── BENEFICIOS ─── */}
-      <section id="beneficios" className="py-24 bg-brand-light">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <SectionBadge text="Beneficios reales" />
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy mb-4">
-              Lo que cambia en tu estudio desde el día uno
-            </h2>
-            <p className="text-lg text-gray-500 max-w-xl mx-auto">
-              Números concretos, no promesas vacías. Esto es lo que reportan los contadores que ya lo usan.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {BENEFITS.map((b, i) => (
-              <div
+              <button
                 key={i}
-                className="bg-white rounded-2xl p-7 border border-gray-100 hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1 transition-all duration-300 group"
+                onClick={() => setActiveStep(i)}
+                className={`text-left p-6 rounded-2xl border-2 transition-all duration-300 group ${
+                  activeStep === i
+                    ? 'bg-[#0A1128] border-[#0A1128] shadow-xl shadow-black/10 -translate-y-1'
+                    : 'bg-white border-[#E9ECEF] hover:border-[#ADB5BD] hover:shadow-md'
+                }`}
               >
-                <div className="w-12 h-12 bg-brand-accent/10 rounded-xl flex items-center justify-center mb-5 group-hover:bg-brand-accent/20 transition-colors">
-                  {b.icon}
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors ${
+                  activeStep === i ? 'bg-[#005477] text-white' : 'bg-[#F1F3F5] text-[#495057] group-hover:bg-[#E9ECEF]'
+                }`}>
+                  {step.icon}
                 </div>
-                <h3 className="font-extrabold text-brand-navy mb-3 text-lg">{b.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{b.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── COMPATIBILIDAD ─── */}
-      <section id="compatibilidad" className="py-24 bg-white border-y border-gray-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
-          <SectionBadge text="Compatibilidad" />
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy mb-4">
-            Funciona con los softwares que ya usás
-          </h2>
-          <p className="text-lg text-gray-500 max-w-xl mx-auto mb-14">
-            No necesitás cambiar tu sistema. ComproScan AR genera el archivo exacto que tu software espera.
-          </p>
-
-          <div className="flex flex-wrap gap-4 justify-center mb-12">
-            {COMPATIBLES.map((soft, i) => (
-              <div
-                key={i}
-                className="bg-brand-light border-2 border-gray-200 hover:border-brand-accent rounded-xl px-6 py-4 font-bold text-brand-navy text-sm transition-all hover:-translate-y-0.5 hover:shadow-md cursor-default"
-              >
-                {soft.name}
-              </div>
-            ))}
-          </div>
-
-          <div className="bg-brand-accent/5 border border-brand-accent/20 rounded-2xl p-6 max-w-2xl mx-auto">
-            <p className="text-brand-navy font-medium">
-              🔧 ¿No ves tu software en la lista?{' '}
-              <a href="mailto:hola@comproscan.ar" className="text-brand-accent font-bold hover:underline">
-                Contanos cuál usás
-              </a>{' '}
-              y lo evaluamos sin costo. Ya integramos formatos a pedido.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── TESTIMONIOS ─── */}
-      <section id="testimonios" className="py-24 bg-brand-light">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <SectionBadge text="Lo que dicen los contadores" />
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy mb-4">
-              Resultados reales de estudios contables argentinos
-            </h2>
-            <p className="text-lg text-gray-500 max-w-xl mx-auto">
-              De Tucumán a CABA, de estudios unipersonales a equipos de 10 personas.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {TESTIMONIALS.map((t, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl p-8 border border-gray-100 hover:shadow-xl hover:shadow-black/5 transition-all duration-300"
-              >
-                <StarRow count={t.stars} />
-                <blockquote className="mt-4 mb-6 text-gray-700 leading-relaxed italic">
-                  "{t.text}"
-                </blockquote>
-                <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 rounded-full bg-brand-accent flex items-center justify-center text-white font-extrabold text-sm shrink-0">
-                    {t.avatar}
-                  </div>
-                  <div>
-                    <p className="font-bold text-brand-navy text-sm">{t.name}</p>
-                    <p className="text-gray-400 text-xs">{t.role} · {t.city}</p>
-                  </div>
+                <div className={`text-[11px] font-semibold uppercase tracking-[0.06em] mb-2 transition-colors ${
+                  activeStep === i ? 'text-[#005477]' : 'text-[#ADB5BD]'
+                }`}>
+                  {step.tag}
                 </div>
-              </div>
+                <h3 className={`text-[16px] font-bold mb-2 transition-colors ${
+                  activeStep === i ? 'text-white' : 'text-[#0A1128]'
+                }`}>
+                  {step.title}
+                </h3>
+                <p className={`text-[13px] leading-relaxed transition-colors ${
+                  activeStep === i ? 'text-white/60' : 'text-[#868E96]'
+                }`}>
+                  {step.desc}
+                </p>
+                {/* Step indicator */}
+                <div className={`mt-4 h-1 rounded-full overflow-hidden ${activeStep === i ? 'bg-white/20' : 'bg-[#F1F3F5]'}`}>
+                  <div
+                    className={`h-full rounded-full transition-all duration-[3500ms] ease-linear ${
+                      activeStep === i ? 'bg-[#005477] w-full' : 'bg-transparent w-0'
+                    }`}
+                  />
+                </div>
+              </button>
             ))}
           </div>
 
           {/* CTA */}
-          <div className="text-center mt-12">
-            <CTAButton onClick={onEnterApp} size="lg">
-              Empezar prueba gratuita de 30 días
-              <ArrowRight className="w-5 h-5" />
-            </CTAButton>
-            <p className="mt-3 text-sm text-gray-400">Sin tarjeta de crédito · Sin compromiso</p>
+          <div className="text-center mt-14">
+            <button
+              onClick={onEnterApp}
+              className="group h-11 px-6 bg-[#0A1128] hover:bg-[#1A2340] text-white text-[14px] font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-black/10 hover:-translate-y-px inline-flex items-center gap-2"
+            >
+              Probá el flujo completo
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+            <p className="text-[12px] text-[#ADB5BD] mt-3">Sin tarjeta · En 30 segundos ya estás procesando</p>
           </div>
         </div>
       </section>
 
-      {/* ─── PRECIOS ─── */}
-      <section id="precios" className="py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-16">
-            <SectionBadge text="Precios transparentes" />
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy mb-4">
-              Invertís menos de lo que ganás en horas ahorradas
+
+      {/* ━━━ BENEFICIOS ━━━ */}
+      <section id="beneficios" className="py-24 lg:py-32 bg-white border-y border-black/[0.04]">
+        <div className="max-w-[1200px] mx-auto px-5">
+          <div className="max-w-xl mb-14">
+            <Badge className="bg-[#E8F8ED] text-[#1B8C3A] mb-4">Beneficios</Badge>
+            <h2 className="text-[32px] sm:text-[40px] font-extrabold text-[#0A1128] tracking-[-0.02em] mb-3">
+              Cambiá cómo trabaja tu estudio
             </h2>
-            <p className="text-lg text-gray-500 max-w-xl mx-auto">
-              Precios en pesos argentinos. Sin sorpresas. Cancelás cuando querés.
+            <p className="text-[16px] text-[#868E96]">
+              Resultados concretos desde el primer día, reportados por estudios contables de todo el país.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 items-start">
-            {PLANS.map((plan, i) => (
+          <div className="grid sm:grid-cols-2 gap-4">
+            {BENEFITS.map((b, i) => (
               <div
                 key={i}
-                className={`rounded-2xl border-2 ${plan.color} p-8 relative transition-all hover:shadow-2xl hover:shadow-black/10 hover:-translate-y-1 duration-300 ${
-                  plan.popular ? 'bg-brand-navy text-white shadow-2xl shadow-brand-navy/20 scale-105' : 'bg-white'
+                className="group p-6 bg-[#FAFBFC] rounded-2xl border border-[#E9ECEF] hover:border-[#ADB5BD] hover:bg-white hover:shadow-lg hover:shadow-black/[0.03] transition-all duration-300"
+              >
+                <div className="w-10 h-10 rounded-xl bg-white border border-[#E9ECEF] flex items-center justify-center mb-4 group-hover:border-[#005477]/20 group-hover:bg-[#005477]/[0.06] transition-colors text-[#005477]">
+                  {b.icon}
+                </div>
+                <h3 className="text-[16px] font-bold text-[#0A1128] mb-2">{b.title}</h3>
+                <p className="text-[14px] text-[#868E96] leading-relaxed">{b.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+      {/* ━━━ COMPATIBILIDAD ━━━ */}
+      <section id="compatibilidad" className="py-20 bg-[#FAFBFC]">
+        <div className="max-w-[1200px] mx-auto px-5 text-center">
+          <Badge className="bg-[#005477]/[0.08] text-[#005477] mb-4">Integraciones</Badge>
+          <h2 className="text-[28px] sm:text-[36px] font-extrabold text-[#0A1128] tracking-[-0.02em] mb-3">
+            Funciona con tu software actual
+          </h2>
+          <p className="text-[15px] text-[#868E96] max-w-md mx-auto mb-12">
+            Exportamos en el formato exacto que tu sistema necesita. Sin adaptaciones manuales.
+          </p>
+
+          <div className="flex flex-wrap gap-3 justify-center max-w-3xl mx-auto mb-8">
+            {COMPATIBLE_SOFTWARE.map((name) => (
+              <div
+                key={name}
+                className="h-12 px-6 bg-white border border-[#E9ECEF] rounded-xl flex items-center gap-2.5 hover:border-[#005477]/30 hover:shadow-md transition-all duration-200 cursor-default"
+              >
+                <Monitor className="w-4 h-4 text-[#ADB5BD]" />
+                <span className="text-[13px] font-semibold text-[#495057]">{name}</span>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-[13px] text-[#ADB5BD]">
+            ¿No ves tu software?{' '}
+            <a href="mailto:hola@comproscan.ar" className="text-[#005477] font-semibold hover:underline">
+              Contanos cuál usás →
+            </a>
+          </p>
+        </div>
+      </section>
+
+
+      {/* ━━━ TESTIMONIOS ━━━ */}
+      <section id="testimonios" className="py-24 lg:py-32 bg-white border-y border-black/[0.04]">
+        <div className="max-w-[1200px] mx-auto px-5">
+          <div className="text-center mb-14">
+            <Badge className="bg-[#F1F3F5] text-[#495057] mb-4">Testimonios</Badge>
+            <h2 className="text-[32px] sm:text-[40px] font-extrabold text-[#0A1128] tracking-[-0.02em] mb-3">
+              Lo que dicen los contadores
+            </h2>
+            <p className="text-[15px] text-[#868E96] max-w-md mx-auto">
+              Estudios reales, resultados reales. De Tucumán a CABA.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-5">
+            {TESTIMONIALS.map((t, i) => (
+              <div
+                key={i}
+                className="p-6 bg-[#FAFBFC] rounded-2xl border border-[#E9ECEF] hover:shadow-lg hover:shadow-black/[0.04] hover:border-[#ADB5BD] transition-all duration-300"
+              >
+                {/* Stars */}
+                <div className="flex gap-0.5 mb-4">
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <div key={j} className="w-4 h-4 text-amber-400">★</div>
+                  ))}
+                </div>
+                <blockquote className="text-[14px] text-[#495057] leading-relaxed mb-6">
+                  "{t.quote}"
+                </blockquote>
+                <div className="flex items-center gap-3 pt-4 border-t border-[#E9ECEF]">
+                  <div className="w-9 h-9 rounded-full bg-[#0A1128] flex items-center justify-center text-white text-[11px] font-bold shrink-0">
+                    {t.initials}
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-bold text-[#0A1128]">{t.name}</p>
+                    <p className="text-[11px] text-[#ADB5BD]">{t.role} · {t.city}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+      {/* ━━━ PRECIOS ━━━ */}
+      <section id="precios" className="py-24 lg:py-32 bg-[#FAFBFC]">
+        <div className="max-w-[1000px] mx-auto px-5">
+          <div className="text-center mb-14">
+            <Badge className="bg-[#005477]/[0.08] text-[#005477] mb-4">Precios</Badge>
+            <h2 className="text-[32px] sm:text-[40px] font-extrabold text-[#0A1128] tracking-[-0.02em] mb-3">
+              Planes simples, sin sorpresas
+            </h2>
+            <p className="text-[15px] text-[#868E96] max-w-md mx-auto">
+              En pesos argentinos. Cancelás cuando quieras. Todos incluyen 30 días gratis.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4 items-start">
+            {PLANS.map((plan) => (
+              <div
+                key={plan.name}
+                className={`rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 ${
+                  plan.popular
+                    ? 'bg-[#0A1128] text-white border-2 border-[#0A1128] shadow-2xl shadow-black/15 relative'
+                    : 'bg-white border-2 border-[#E9ECEF] hover:border-[#ADB5BD] hover:shadow-lg hover:shadow-black/[0.04]'
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-accent text-white text-xs font-extrabold uppercase tracking-widest px-5 py-1.5 rounded-full shadow-lg">
-                    ⭐ Más popular
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="bg-[#005477] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md">
+                      Más popular
+                    </span>
                   </div>
                 )}
-                <div className="mb-6">
-                  <h3 className={`text-xl font-extrabold mb-1 ${plan.popular ? 'text-white' : 'text-brand-navy'}`}>
+
+                <div className="mb-5">
+                  <h3 className={`text-[18px] font-bold ${plan.popular ? 'text-white' : 'text-[#0A1128]'}`}>
                     {plan.name}
                   </h3>
-                  <p className={`text-sm ${plan.popular ? 'text-white/60' : 'text-gray-400'}`}>{plan.subtitle}</p>
+                  <p className={`text-[12px] mt-0.5 ${plan.popular ? 'text-white/50' : 'text-[#ADB5BD]'}`}>
+                    {plan.desc}
+                  </p>
                 </div>
 
-                <div className="mb-8">
-                  <div className="flex items-end gap-1">
-                    <span className={`text-4xl font-extrabold ${plan.popular ? 'text-white' : 'text-brand-navy'}`}>
-                      {plan.price}
+                <div className="mb-6">
+                  <div className="flex items-end gap-0.5">
+                    <span className={`text-[36px] font-extrabold tracking-tight ${plan.popular ? 'text-white' : 'text-[#0A1128]'}`}>
+                      {plan.price === 'A medida' ? '' : '$'}{plan.price}
                     </span>
-                    <span className={`text-sm mb-1.5 ${plan.popular ? 'text-white/60' : 'text-gray-400'}`}>
-                      {plan.period}
-                    </span>
+                    {plan.price !== 'A medida' && (
+                      <span className={`text-[13px] mb-1.5 ${plan.popular ? 'text-white/40' : 'text-[#ADB5BD]'}`}>/mes</span>
+                    )}
                   </div>
                   {plan.price !== 'A medida' && (
-                    <p className={`text-xs mt-1 ${plan.popular ? 'text-white/50' : 'text-gray-400'}`}>
-                      + IVA · Factura A disponible
-                    </p>
+                    <span className={`text-[11px] ${plan.popular ? 'text-white/30' : 'text-[#ADB5BD]'}`}>+ IVA</span>
                   )}
                 </div>
 
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((f, j) => (
-                    <li key={j} className="flex items-start gap-2.5 text-sm">
-                      <Check
-                        className={`w-4 h-4 mt-0.5 shrink-0 ${plan.popular ? 'text-brand-sage' : 'text-brand-accent'}`}
-                      />
-                      <span className={plan.popular ? 'text-white/80' : 'text-gray-600'}>{f}</span>
+                <ul className="space-y-2.5 mb-6">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <Check className={`w-4 h-4 mt-0.5 shrink-0 ${plan.popular ? 'text-[#34C759]' : 'text-[#005477]'}`} />
+                      <span className={`text-[13px] ${plan.popular ? 'text-white/70' : 'text-[#6C757D]'}`}>{f}</span>
                     </li>
                   ))}
                 </ul>
 
                 <button
                   onClick={onEnterApp}
-                  className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all ${
+                  className={`w-full h-10 rounded-xl text-[13px] font-semibold transition-all ${
                     plan.popular
-                      ? 'bg-brand-accent text-white hover:bg-[#003B53] shadow-lg shadow-brand-accent/30'
-                      : plan.price === 'A medida'
-                      ? 'bg-brand-light border-2 border-brand-navy text-brand-navy hover:bg-gray-100'
-                      : 'bg-brand-light border-2 border-brand-navy text-brand-navy hover:bg-gray-100'
+                      ? 'bg-white text-[#0A1128] hover:bg-[#F1F3F5]'
+                      : 'bg-[#F1F3F5] text-[#0A1128] hover:bg-[#E9ECEF] border border-[#E9ECEF]'
                   }`}
                 >
-                  {plan.cta}
+                  {plan.price === 'A medida' ? 'Hablar con un asesor' : 'Empezar gratis'}
                 </button>
               </div>
             ))}
           </div>
 
-          <p className="text-center text-sm text-gray-400 mt-8">
-            Todos los planes incluyen 30 días de prueba gratuita · Sin tarjeta de crédito requerida
+          <p className="text-center text-[12px] text-[#ADB5BD] mt-6">
+            Todos los planes incluyen 30 días de prueba gratuita · Sin tarjeta requerida · Factura A disponible
           </p>
         </div>
       </section>
 
-      {/* ─── FAQ ─── */}
-      <section id="faq" className="py-24 bg-brand-light">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-14">
-            <SectionBadge text="Preguntas frecuentes" />
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-navy mb-4">
-              Tus dudas, respondidas sin rodeos
+
+      {/* ━━━ FAQ ━━━ */}
+      <section id="faq" className="py-24 lg:py-32 bg-white border-t border-black/[0.04]">
+        <div className="max-w-[640px] mx-auto px-5">
+          <div className="text-center mb-12">
+            <Badge className="bg-[#F1F3F5] text-[#495057] mb-4">FAQ</Badge>
+            <h2 className="text-[32px] font-extrabold text-[#0A1128] tracking-[-0.02em]">
+              Preguntas frecuentes
             </h2>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             {FAQS.map((faq, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-              >
+              <div key={i} className="border border-[#E9ECEF] rounded-xl overflow-hidden bg-[#FAFBFC] hover:border-[#ADB5BD] transition-colors">
                 <button
-                  className="w-full flex items-center justify-between gap-4 p-6 text-left hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                 >
-                  <span className="font-semibold text-brand-navy text-sm sm:text-base">{faq.q}</span>
-                  {openFaq === i ? (
-                    <ChevronUp className="w-5 h-5 text-brand-accent shrink-0" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-400 shrink-0" />
-                  )}
+                  <span className="text-[14px] font-semibold text-[#0A1128]">{faq.q}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-[#ADB5BD] shrink-0 transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`}
+                  />
                 </button>
-                {openFaq === i && (
-                  <div className="px-6 pb-6 text-gray-600 text-sm leading-relaxed border-t border-gray-50 pt-4 animate-fade-in">
+                <div className={`overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <div className="px-5 pb-4 text-[13px] text-[#6C757D] leading-relaxed border-t border-[#E9ECEF] pt-3">
                     {faq.a}
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── CTA FINAL ─── */}
-      <section id="cta-final" className="py-24 bg-brand-navy relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-72 h-72 bg-brand-accent/15 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-56 h-56 bg-brand-sage/10 rounded-full blur-3xl" />
-        </div>
-
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-6">
-              Suficiente de perder tiempo.<br />
-              <span className="text-brand-sage">Empezá hoy, gratis.</span>
-            </h2>
-            <p className="text-xl text-white/70 max-w-2xl mx-auto">
-              En 30 segundos tenés tu cuenta activa y podés subir tu primer comprobante. Sin tarjeta. Sin trampa.
-            </p>
-          </div>
-
-          {/* Register Form */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-8 max-w-lg mx-auto">
-            <h3 className="text-white font-bold text-xl mb-6 text-center">
-              Crear cuenta gratis — sin tarjeta
-            </h3>
-            <form
-              className="space-y-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                onEnterApp();
-              }}
-            >
-              <input
-                type="text"
-                placeholder="Tu nombre completo"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full bg-white/20 border border-white/30 text-white placeholder:text-white/50 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-brand-sage focus:bg-white/30 transition-all"
-              />
-              <input
-                type="email"
-                placeholder="Tu email profesional"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full bg-white/20 border border-white/30 text-white placeholder:text-white/50 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-brand-sage focus:bg-white/30 transition-all"
-              />
-              <input
-                type="tel"
-                placeholder="WhatsApp (opcional, para soporte rápido)"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full bg-white/20 border border-white/30 text-white placeholder:text-white/50 rounded-xl px-4 py-3.5 text-sm outline-none focus:border-brand-sage focus:bg-white/30 transition-all"
-              />
-              <button
-                type="submit"
-                className="w-full bg-brand-accent hover:bg-[#003B53] text-white font-bold py-4 rounded-xl text-base transition-all shadow-lg shadow-brand-accent/40 hover:-translate-y-0.5 active:translate-y-0"
-              >
-                Empezar prueba gratis de 30 días 🚀
-              </button>
-            </form>
-            <p className="text-white/40 text-xs text-center mt-4">
-              Sin tarjeta · Sin compromiso · Protegido por Ley 25.326
-            </p>
-          </div>
-
-          {/* Bottom trust badges */}
-          <div className="flex flex-wrap justify-center gap-6 mt-14">
-            {[
-              { icon: '🇦🇷', text: 'Hecho en Argentina' },
-              { icon: '🔒', text: 'Datos 100% seguros' },
-              { icon: '📞', text: 'Soporte en español' },
-              { icon: '✅', text: 'Sin contratos largos' },
-            ].map((badge, i) => (
-              <div key={i} className="flex items-center gap-2 text-white/60 text-sm">
-                <span>{badge.icon}</span>
-                <span>{badge.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── FOOTER ─── */}
-      <footer className="bg-[#060D1F] text-white/50 py-14">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-            {/* Brand */}
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-7 h-7 bg-brand-accent rounded-lg flex items-center justify-center">
-                  <FileText className="w-3.5 h-3.5 text-white" />
                 </div>
-                <span className="font-extrabold text-white text-sm">
-                  ComproScan <span className="text-brand-accent">AR</span>
-                </span>
               </div>
-              <p className="text-xs leading-relaxed mb-4">
-                IA especializada en documentos fiscales argentinos. Hecho en Argentina, para contadores argentinos.
-              </p>
-              <div className="flex gap-3">
-                <a
-                  href="https://wa.me/5493816000000"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-green-600 hover:bg-green-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  WhatsApp
-                </a>
-                <a
-                  href="mailto:hola@comproscan.ar"
-                  className="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  Email
-                </a>
-              </div>
-            </div>
-
-            {/* Producto */}
-            <div>
-              <h4 className="text-white font-bold text-sm mb-4">Producto</h4>
-              <ul className="space-y-2 text-xs">
-                {['Cómo funciona', 'Precios', 'Seguridad', 'Integraciones', 'Blog'].map((l) => (
-                  <li key={l}>
-                    <a href="#" className="hover:text-white transition-colors">{l}</a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Empresa */}
-            <div>
-              <h4 className="text-white font-bold text-sm mb-4">Empresa</h4>
-              <ul className="space-y-2 text-xs">
-                {['Nosotros', 'Soporte', 'Afiliados', 'API', 'Estado del servicio'].map((l) => (
-                  <li key={l}>
-                    <a href="#" className="hover:text-white transition-colors">{l}</a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Legal */}
-            <div>
-              <h4 className="text-white font-bold text-sm mb-4">Legal</h4>
-              <ul className="space-y-2 text-xs">
-                {['Política de Privacidad', 'Términos de Servicio', 'Ley 25.326', 'Cookies'].map((l) => (
-                  <li key={l}>
-                    <a href="#" className="hover:text-white transition-colors">{l}</a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            ))}
           </div>
+        </div>
+      </section>
 
-          <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
-            <p>© 2025 ComproScan AR · Todos los derechos reservados</p>
-            <p className="text-center">
-              🇦🇷 Hecho en Argentina para contadores argentinos · Tucumán · CABA · Córdoba · Mendoza
+
+      {/* ━━━ FINAL CTA ━━━ */}
+      <section className="py-24 lg:py-32 bg-[#0A1128] relative overflow-hidden">
+        {/* Ambient glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/3 w-[500px] h-[500px] rounded-full opacity-[0.08]" style={{ background: 'radial-gradient(circle, #005477 0%, transparent 60%)' }} />
+          <div className="absolute bottom-0 right-1/4 w-[300px] h-[300px] rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(circle, #34C759 0%, transparent 60%)' }} />
+        </div>
+
+        <div className="relative max-w-[560px] mx-auto px-5 text-center">
+          <h2 className="text-[32px] sm:text-[44px] font-extrabold text-white tracking-[-0.03em] leading-[1.1] mb-4">
+            Dejá de tipear.<br />
+            <span className="text-[#005477]">Empezá a escanear.</span>
+          </h2>
+          <p className="text-[16px] text-white/50 mb-10 max-w-sm mx-auto">
+            En 30 segundos tenés tu cuenta activa y procesás tu primer comprobante.
+          </p>
+
+          {/* Inline form */}
+          <form
+            className="flex flex-col sm:flex-row gap-2.5 max-w-md mx-auto mb-4"
+            onSubmit={(e) => { e.preventDefault(); onEnterApp(); }}
+          >
+            <input
+              type="email"
+              placeholder="Tu email profesional"
+              required
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className="flex-1 h-12 px-4 bg-white/[0.08] border border-white/[0.12] text-white placeholder:text-white/30 rounded-xl text-[14px] outline-none focus:border-[#005477] focus:bg-white/[0.12] transition-all"
+            />
+            <button
+              type="submit"
+              className="h-12 px-6 bg-[#005477] hover:bg-[#003B53] text-white text-[14px] font-semibold rounded-xl transition-all shadow-lg shadow-[#005477]/30 hover:shadow-xl hover:-translate-y-px active:translate-y-0 shrink-0 flex items-center gap-2 justify-center"
+            >
+              Probar gratis
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </form>
+          <p className="text-[11px] text-white/25">
+            Sin tarjeta de crédito · Sin compromiso · Ley 25.326
+          </p>
+        </div>
+      </section>
+
+
+      {/* ━━━ FOOTER ━━━ */}
+      <footer className="py-10 bg-[#060D1F] border-t border-white/[0.04]">
+        <div className="max-w-[1200px] mx-auto px-5">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            {/* Logo */}
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-[#005477] flex items-center justify-center">
+                <FileText className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-[13px] font-bold text-white/60">
+                ComproScan <span className="text-[#005477]">AR</span>
+              </span>
+            </div>
+
+            {/* Links */}
+            <div className="flex flex-wrap gap-x-6 gap-y-1 justify-center">
+              {['Privacidad', 'Términos', 'Soporte', 'Estado'].map((l) => (
+                <a key={l} href="#" className="text-[12px] text-white/30 hover:text-white/60 transition-colors">{l}</a>
+              ))}
+              <a href="https://wa.me/5493816000000" className="text-[12px] text-white/30 hover:text-white/60 transition-colors">
+                WhatsApp
+              </a>
+            </div>
+
+            {/* Copyright */}
+            <p className="text-[11px] text-white/20">
+              © 2026 ComproScan AR · Hecho para contadores argentinos
             </p>
           </div>
         </div>
       </footer>
+
+
+      {/* ━━━ VIDEO MODAL ━━━ */}
+      {videoOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setVideoOpen(false)}>
+          <div className="bg-[#0A1128] rounded-2xl w-full max-w-2xl aspect-video flex items-center justify-center relative overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <button className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition-colors" onClick={() => setVideoOpen(false)}>
+              <X className="w-4 h-4" />
+            </button>
+            <div className="text-center px-8">
+              <div className="w-16 h-16 rounded-2xl bg-[#005477]/20 flex items-center justify-center mx-auto mb-5">
+                <Play className="w-8 h-8 text-[#005477] fill-[#005477]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-1.5">Demo — 60 segundos</h3>
+              <p className="text-white/40 text-sm mb-6">Disponible muy pronto. Probalo gratis mientras tanto.</p>
+              <button onClick={onEnterApp} className="h-10 px-5 bg-[#005477] text-white text-sm font-semibold rounded-xl hover:bg-[#003B53] transition-colors">
+                Ir al demo real →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

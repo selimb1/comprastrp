@@ -11,8 +11,9 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 api_key = os.getenv("GEMINI_API_KEY")
-if not api_key or api_key == "AIzaSyC_HuYWnVMXPJqrvwUdp8hFYQoOao0MqlA":
-    print("⚠️  ADVERTENCIA: La GEMINI_API_KEY no está configurada correctamente en backend/.env")
+if not api_key:
+    # Si no hay API Key, mostramos advertencia (pero no hardcodeamos keys viejas para evitar alertas de seguridad)
+    print("⚠️  ADVERTENCIA: La GEMINI_API_KEY no está configurada en backend/.env")
     print("Por favor, obtén una en: https://aistudio.google.com/app/apikey")
 
 client = genai.Client(api_key=api_key if api_key else "DUMMY_KEY")

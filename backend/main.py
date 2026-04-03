@@ -10,7 +10,12 @@ from google.genai import types
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY", "DUMMY_KEY"))
+api_key = os.getenv("GEMINI_API_KEY")
+if not api_key or api_key == "AIzaSyC_HuYWnVMXPJqrvwUdp8hFYQoOao0MqlA":
+    print("⚠️  ADVERTENCIA: La GEMINI_API_KEY no está configurada correctamente en backend/.env")
+    print("Por favor, obtén una en: https://aistudio.google.com/app/apikey")
+
+client = genai.Client(api_key=api_key if api_key else "DUMMY_KEY")
 
 app = FastAPI(title="ComproScan AR API", description="Motor Inteligente de procesamiento de facturas ARG")
 
@@ -85,7 +90,7 @@ Reglas IMPORTANTES y OBLIGATORIAS:
         
         # Async Google GenAI call with Pydantic structured output
         response = await client.aio.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-2.0-flash", # Corregido: Antes era gemini-2.5-flash (no existe)
             contents=[SYSTEM_PROMPT, "Extrae detalladamente los datos de este comprobante argentino.", image_part],
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -99,7 +104,14 @@ Reglas IMPORTANTES y OBLIGATORIAS:
     except Exception as e:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        
+        error_msg = str(e)
+        if "API key not valid" in error_msg:
+            error_msg = "Error de Servidor: La GEMINI_API_KEY es inválida. Revisa tu archivo backend/.env"
+        elif "model not found" in error_msg.lower():
+            error_msg = "Error de Servidor: El modelo de IA no está disponible en tu región o no existe."
+            
+        raise HTTPException(status_code=500, detail=error_msg)
 
 @app.post("/api/v1/export/csv")
 def export_csv(comprobantes: List[ComprobanteAFIP]):

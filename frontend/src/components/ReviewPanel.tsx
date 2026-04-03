@@ -41,7 +41,7 @@ export default function ReviewPanel({ imagePreviewUrl, extractedData, isLoading,
       <div className="w-full flex flex-col items-center justify-center p-12 bg-white rounded-xl shadow-sm border border-gray-100 min-h-[500px]">
         <div className="w-12 h-12 border-4 border-brand-sage border-t-brand-accent rounded-full animate-spin mb-4"></div>
         <h3 className="text-xl font-semibold text-brand-navy">Analizando Comprobante con IA...</h3>
-        <p className="text-sm text-brand-sage mt-2">Extrayendo datos de AFIP y validando matemáticas.</p>
+        <p className="text-sm text-brand-sage mt-2">Extrayendo datos de ARCA y validando matemáticas.</p>
       </div>
     );
   }
@@ -115,7 +115,7 @@ export default function ReviewPanel({ imagePreviewUrl, extractedData, isLoading,
            </div>
            {isMathValid && isValidCuit ? (
              <div className="bg-green-50 text-green-700 px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold border border-green-200 shadow-sm">
-               <CheckCircle size={18} /> Validado por AFIP
+               <CheckCircle size={18} /> Validado por ARCA
              </div>
            ) : (
              <div className="bg-red-50 text-red-700 px-3 py-2 rounded-lg flex items-center gap-2 text-[13px] font-semibold border border-red-200 shadow-sm">
@@ -125,7 +125,7 @@ export default function ReviewPanel({ imagePreviewUrl, extractedData, isLoading,
         </div>
 
         <div className="flex-1 space-y-5">
-           {/* Seccion: Cabecera AFIP */}
+           {/* Seccion: Cabecera ARCA */}
            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Tipo</label>

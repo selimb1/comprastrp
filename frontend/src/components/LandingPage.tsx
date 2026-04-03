@@ -52,7 +52,7 @@ const BENEFITS = [
   {
     icon: <ShieldCheck className="w-5 h-5" />,
     title: 'Menos errores, menos riesgo',
-    desc: 'Validación automática de CUIT y montos. Evitá multas y problemas con AFIP por errores de tipeo.',
+    desc: 'Validación automática de CUIT y montos. Evitá multas y problemas con ARCA por errores de tipeo.',
   },
   {
     icon: <Zap className="w-5 h-5" />,

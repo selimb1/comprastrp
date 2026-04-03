@@ -52,7 +52,7 @@ export default function HistoryGrid() {
   });
 
   const getStatusBadge = (status: string) => {
-    if (status === 'valid') return <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap">Validado AFIP</span>;
+    if (status === 'valid') return <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap">Validado ARCA</span>;
     if (status === 'pending') return <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap">Pendiente Revisión</span>;
     return <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap">Error Matemático</span>;
   };

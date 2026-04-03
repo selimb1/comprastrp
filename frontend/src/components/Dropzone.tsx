@@ -67,7 +67,7 @@ export default function Dropzone({ onFilesAdded }: DropzoneProps) {
           Suelta tus comprobantes aquí
         </h3>
         <p className="text-brand-sage mb-6 max-w-md mx-auto text-sm leading-relaxed">
-          Arrastra hasta 50 facturas o tickets (JPG, PNG o PDF). La Inteligencia Artificial extraerá automáticamente validando contra normativa AFIP.
+          Arrastra hasta 50 facturas o tickets (JPG, PNG o PDF). La Inteligencia Artificial extraerá automáticamente validando contra normativa ARCA.
         </p>
         
         <div className="flex gap-4 justify-center">

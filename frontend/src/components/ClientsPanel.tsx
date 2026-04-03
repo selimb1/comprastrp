@@ -6,7 +6,7 @@ const MOCK_CLIENTS = [
   { id: 2, name: 'Acme Corporación SRL', cuit: '30-11111111-0', erp: 'Contabilium', processed: 130, email: 'facturacion@acme.com' },
   { id: 3, name: 'Estudio Jurídico Rivas', cuit: '27-00000000-1', erp: 'Holistor TXT', processed: 89, email: 'estudio@rivasabogados.net' },
   { id: 4, name: 'Gómez Ferreterías', cuit: '20-12345678-5', erp: 'Bejerman', processed: 652, email: 'pagos@gomezferr.com.ar' },
-  { id: 5, name: 'Consultora Belmotec', cuit: '30-30580202-1', erp: 'Excel AFIP', processed: 25, email: 'info@belmotec.com.ar' },
+  { id: 5, name: 'Consultora Belmotec', cuit: '30-30580202-1', erp: 'Excel ARCA', processed: 25, email: 'info@belmotec.com.ar' },
   { id: 6, name: 'Zapatillas Puma AR', cuit: '30-80000000-3', erp: 'Tango Gestión', processed: 1102, email: 'ar@puma.com' },
 ];
 

@@ -91,7 +91,7 @@ Reglas IMPORTANTES y OBLIGATORIAS:
         
         # Async Google GenAI call with Pydantic structured output
         response = await client.aio.models.generate_content(
-            model="gemini-2.0-flash", # Corregido: Antes era gemini-2.5-flash (no existe)
+            model="gemini-2.5-flash", # Restaurado a 2.5-flash para saltar la limitación de cuota de 2.0
             contents=[SYSTEM_PROMPT, "Extrae detalladamente los datos de este comprobante argentino.", image_part],
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",

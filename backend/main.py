@@ -23,9 +23,14 @@ app = FastAPI(title="ComproScan AR API", description="Motor Inteligente de proce
 from export_engine import generate_generic_csv, generate_holistor_txt
 from database import engine, Base
 from routers import auth
+import logging
 
-# Create DB tables
-Base.metadata.create_all(bind=engine)
+try:
+    # Create DB tables
+    Base.metadata.create_all(bind=engine)
+    logging.info("Conexión a la base de datos exitosa.")
+except Exception as e:
+    logging.error(f"Falla inicializando la base de datos (Posible falta de DATABASE_URL): {e}")
 
 # CORS para que el Frontend local acceda a la API
 app.add_middleware(

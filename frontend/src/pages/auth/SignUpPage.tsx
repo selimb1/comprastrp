@@ -5,6 +5,9 @@ import { Input } from "../../components/ui/input";
 import { Checkbox } from "../../components/ui/checkbox";
 import { FcGoogle } from "react-icons/fc";
 import { BsMicrosoft } from "react-icons/bs";
+import axios from "axios";
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function SignUpPage() {
   const navigate = useNavigate();
@@ -15,15 +18,20 @@ export default function SignUpPage() {
   });
   const [consent, setConsent] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!consent) {
       alert("Debes aceptar el tratamiento de datos según la Ley 25.326");
       return;
     }
-    // TODO: Connect to Auth endpoint
-    alert("¡Cuenta creada exitosamente! Revisa tu email.");
-    navigate("/login");
+    
+    try {
+      await axios.post(`${API_URL}/auth/signup`, formData);
+      alert("¡Cuenta creada exitosamente! Podés iniciar sesión.");
+      navigate("/login");
+    } catch (e: any) {
+      alert("Error al registrar la cuenta: " + (e.response?.data?.detail || e.message));
+    }
   };
 
   return (

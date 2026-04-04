@@ -70,8 +70,10 @@ class ComprobanteAFIP(BaseModel):
 def health_check():
     return {"status": "ok", "message": "ComproScan AR API is running!"}
 
+from fastapi import Form
+
 @app.post("/api/v1/extract", response_model=ComprobanteAFIP)
-async def process_file(file: UploadFile = File(...)):
+async def process_file(file: UploadFile = File(...), client_id: Optional[str] = Form(None)):
     """
     Recibe un archivo y delega el análisis al motor de IA multimodelo (OpenAI).
     """

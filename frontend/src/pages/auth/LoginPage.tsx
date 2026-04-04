@@ -5,16 +5,23 @@ import { Input } from "../../components/ui/input";
 import { Checkbox } from "../../components/ui/checkbox";
 import { FcGoogle } from "react-icons/fc";
 import { BsMicrosoft } from "react-icons/bs";
+import axios from "axios";
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Connect to backend.
-    // Simulating login flow -> Dashboard
-    navigate("/dashboard");
+    try {
+      const response = await axios.post(`${API_URL}/auth/login`, formData);
+      localStorage.setItem('access_token', response.data.access_token);
+      navigate("/dashboard");
+    } catch (e: any) {
+      alert("Credenciales incorrectas o error en el servidor: " + (e.response?.data?.detail || e.message));
+    }
   };
 
   return (

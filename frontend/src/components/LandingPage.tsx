@@ -7,7 +7,8 @@ import {
 } from 'lucide-react';
 
 interface LandingPageProps {
-  onEnterApp: () => void;
+  onLogin: () => void;
+  onSignUp: () => void;
 }
 
 
@@ -162,7 +163,7 @@ function Badge({ children, className = '' }: { children: React.ReactNode; classN
    MAIN
    ═══════════════════════════════════════════ */
 
-export default function LandingPage({ onEnterApp }: LandingPageProps) {
+export default function LandingPage({ onLogin, onSignUp }: LandingPageProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -220,13 +221,13 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
           {/* Desktop CTAs */}
           <div className="hidden md:flex items-center gap-3">
             <button
-              onClick={onEnterApp}
+              onClick={onLogin}
               className="text-[13px] font-medium text-[#6C757D] hover:text-[#0A1128] transition-colors px-3 py-1.5"
             >
               Iniciar sesión
             </button>
             <button
-              onClick={onEnterApp}
+              onClick={onSignUp}
               className="h-9 px-4 bg-[#0A1128] hover:bg-[#1A2340] text-white text-[13px] font-semibold rounded-lg transition-all hover:shadow-lg hover:shadow-black/10 hover:-translate-y-px active:translate-y-0"
             >
               Probar gratis
@@ -248,10 +249,10 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
               </button>
             ))}
             <div className="pt-3 border-t border-black/[0.04] mt-2 space-y-2">
-              <button onClick={onEnterApp} className="w-full h-10 bg-[#0A1128] text-white text-sm font-semibold rounded-lg">
+              <button onClick={onSignUp} className="w-full h-10 bg-[#0A1128] text-white text-sm font-semibold rounded-lg">
                 Probar gratis
               </button>
-              <button onClick={onEnterApp} className="w-full text-center text-sm text-[#868E96] py-2">
+              <button onClick={onLogin} className="w-full text-center text-sm text-[#868E96] py-2">
                 Iniciar sesión
               </button>
             </div>
@@ -290,7 +291,7 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
                 <button
-                  onClick={onEnterApp}
+                  onClick={onSignUp}
                   className="group h-12 px-7 bg-[#005477] hover:bg-[#003B53] text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-[#005477]/20 hover:shadow-xl hover:shadow-[#005477]/30 hover:-translate-y-px active:translate-y-0 flex items-center gap-2 justify-center text-[15px]"
                 >
                   Comenzá tu prueba gratis
@@ -492,7 +493,7 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
           {/* CTA */}
           <div className="text-center mt-14">
             <button
-              onClick={onEnterApp}
+              onClick={onSignUp}
               className="group h-11 px-6 bg-[#0A1128] hover:bg-[#1A2340] text-white text-[14px] font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-black/10 hover:-translate-y-px inline-flex items-center gap-2"
             >
               Probá el flujo completo
@@ -675,7 +676,7 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
                 </ul>
 
                 <button
-                  onClick={onEnterApp}
+                  onClick={onSignUp}
                   className={`w-full h-10 rounded-xl text-[13px] font-semibold transition-all ${plan.popular
                     ? 'bg-white text-[#0A1128] hover:bg-[#F1F3F5]'
                     : 'bg-[#F1F3F5] text-[#0A1128] hover:bg-[#E9ECEF] border border-[#E9ECEF]'
@@ -748,7 +749,7 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
           {/* Inline form */}
           <form
             className="flex flex-col sm:flex-row gap-2.5 max-w-md mx-auto mb-4"
-            onSubmit={(e) => { e.preventDefault(); onEnterApp(); }}
+            onSubmit={(e) => { e.preventDefault(); onSignUp(); }}
           >
             <input
               type="email"
@@ -819,7 +820,7 @@ export default function LandingPage({ onEnterApp }: LandingPageProps) {
               </div>
               <h3 className="text-xl font-bold text-white mb-1.5">Demo — 60 segundos</h3>
               <p className="text-white/40 text-sm mb-6">Disponible muy pronto. Probalo gratis mientras tanto.</p>
-              <button onClick={onEnterApp} className="h-10 px-5 bg-[#005477] text-white text-sm font-semibold rounded-xl hover:bg-[#003B53] transition-colors">
+              <button onClick={onSignUp} className="h-10 px-5 bg-[#005477] text-white text-sm font-semibold rounded-xl hover:bg-[#003B53] transition-colors">
                 Ir al demo real →
               </button>
             </div>

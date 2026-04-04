@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Dropzone from './components/Dropzone';
 import ReviewPanel from './components/ReviewPanel';
 import Sidebar from './components/Sidebar';
@@ -19,7 +20,8 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 type AppState = 'home' | 'upload' | 'processing' | 'review' | 'done' | 'history' | 'clients' | 'reports' | 'settings';
 
 function App() {
-  const [showLanding, setShowLanding] = useState(true);
+  const navigate = useNavigate();
+  const [showLanding] = useState(true);
   const [appState, setAppState] = useState<AppState>('upload');
 
   const [selectedClientId, setSelectedClientId] = useState<string>('');
@@ -226,7 +228,12 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={
-        showLanding ? <LandingPage onEnterApp={() => setShowLanding(false)} /> : <Navigate to="/dashboard" />
+        showLanding
+          ? <LandingPage
+              onLogin={() => navigate('/login')}
+              onSignUp={() => navigate('/signup')}
+            />
+          : <Navigate to="/dashboard" />
       } />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />

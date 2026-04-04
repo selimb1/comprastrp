@@ -64,7 +64,16 @@ export default function ReviewPanel({ imagePreviewUrl, extractedData, isLoading,
   const isValidCuit = validateCuitModulo11(formData.cuit_emisor);
   const noGravadoExento = (formData.importes.no_gravado || 0) + (formData.importes.exento || 0);
   const mathCalculado = (formData.importes.neto_gravado_21 || 0) + (formData.importes.iva_21 || 0) + noGravadoExento;
-  const isMathValid = Math.abs(mathCalculado - (formData.importes.total || 0)) <= 1.0;
+  
+  const tipo = formData.tipo_comprobante?.toUpperCase().replace(/FACTURA|TIPO|F\./g, '').trim();
+  const isSinIvaDiscriminado = ['B', 'C', 'E', 'T'].includes(tipo);
+
+  let isMathValid = false;
+  if (isSinIvaDiscriminado && mathCalculado === 0) {
+    isMathValid = (formData.importes.total || 0) > 0;
+  } else {
+    isMathValid = Math.abs(mathCalculado - (formData.importes.total || 0)) <= 1.0;
+  }
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault(); // Evita recargar la pagina si el usuario oprime Enter

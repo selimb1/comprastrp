@@ -92,13 +92,14 @@ async def process_file(file: UploadFile = File(...), client_id: Optional[str] = 
         # En caso de PDF, requeriría pdf2image, pero lo simplificamos para el MVP con imágenes directas.
         mime_type = file.content_type if file.content_type else "image/jpeg"
         
-        SYSTEM_PROMPT = """Actúa como un Contador Público Nacional de Argentina experto en facturación AFIP.
+        SYSTEM_PROMPT = """Actúa como un Contador Público Nacional de Argentina experto en facturación ARCA.
 Extrae los datos del comprobante fiscal (foto provista) estrictamente en el esquema solicitado.
 Reglas IMPORTANTES y OBLIGATORIAS:
-- Las Facturas "C" y los tickets de monotributistas JAMÁS discriminan IVA. Devuelve todos los campos iva_* y neto_gravado_* en 0, y pon todo en "no_gravado" o directamente solo en "total".
-- Entiende "F.B." como Factura B y "F.A." como Factura A.
-- Asegúrate de que matemática cierre perfecto (netos + ivas + percepciones = total).
-- Las fechas en formato YYYY-MM-DD.
+1. Facturas A y M: El IVA se desglosa del precio neto (discriminado). Extrae los montos de neto_gravado_* e iva_*.
+2. Facturas B, C, E y T: NO discriminan IVA (o está incluido/no alcanzado). DEBES devolver todos los campos iva_* y neto_gravado_* en 0. Asigna el importe total ÚNICAMENTE al campo "total" (o también a "no_gravado"/"exento" si el comprobante así lo dice expresamente). JAMAS deduzcas matemáticamente el IVA de una Factura B.
+3. Asegúrate de que la matemática cierre perfecto (netos + ivas + percepciones + exento/no_gravado = total). Si pones todo en "total" para B/C, pon 0 en netos e ivas.
+4. Entiende "F.B." como Factura B y "F.A." como Factura A.
+5. Las fechas en formato YYYY-MM-DD.
 """
         
         image_part = types.Part.from_bytes(data=contents, mime_type=mime_type)

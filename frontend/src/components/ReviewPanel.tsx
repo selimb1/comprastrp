@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react';
-import { FileText, CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react';
+import { FileText, AlertTriangle, ArrowRight } from 'lucide-react';
 
 interface ExtractedData {
   tipo_comprobante: string;
@@ -122,11 +122,7 @@ export default function ReviewPanel({ imagePreviewUrl, extractedData, isLoading,
                Corrobora y oprime <kbd className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 text-xs font-mono text-gray-600 shadow-sm mx-1">ENTER</kbd> para aprobar.
              </p>
            </div>
-           {isMathValid && isValidCuit ? (
-             <div className="bg-green-50 text-green-700 px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold border border-green-200 shadow-sm">
-               <CheckCircle size={18} /> Validado por ARCA
-             </div>
-           ) : (
+           {(!isMathValid || !isValidCuit) && (
              <div className="bg-red-50 text-red-700 px-3 py-2 rounded-lg flex items-center gap-2 text-[13px] font-semibold border border-red-200 shadow-sm">
                <AlertTriangle size={18} className="shrink-0" /> Inconsistencia
              </div>

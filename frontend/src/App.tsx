@@ -8,6 +8,10 @@ import LandingPage from './components/LandingPage';
 import { FolderDown, Search, Bell } from 'lucide-react';
 import axios from 'axios';
 
+import { Routes, Route, Navigate } from 'react-router-dom';
+import LoginPage from './pages/auth/LoginPage';
+import SignUpPage from './pages/auth/SignUpPage';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 type AppState = 'home' | 'upload' | 'processing' | 'review' | 'done' | 'history' | 'clients' | 'reports' | 'settings';
@@ -90,11 +94,7 @@ function App() {
     }
   };
 
-  if (showLanding) {
-    return <LandingPage onEnterApp={() => setShowLanding(false)} />;
-  }
-
-  return (
+  const renderDashboard = () => (
     <div className="min-h-screen bg-[#F5F7F6] font-sans selection:bg-brand-sage selection:text-white flex">
       
       {/* Sidebar Corporativo */}
@@ -193,6 +193,17 @@ function App() {
       </div>
 
     </div>
+  );
+
+  return (
+    <Routes>
+      <Route path="/" element={
+        showLanding ? <LandingPage onEnterApp={() => setShowLanding(false)} /> : <Navigate to="/dashboard" />
+      } />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/dashboard" element={renderDashboard()} />
+    </Routes>
   );
 }
 

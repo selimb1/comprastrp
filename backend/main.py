@@ -21,6 +21,11 @@ client = genai.Client(api_key=api_key if api_key else "DUMMY_KEY")
 app = FastAPI(title="ComproScan AR API", description="Motor Inteligente de procesamiento de facturas ARG")
 
 from export_engine import generate_generic_csv, generate_holistor_txt
+from database import engine, Base
+from routers import auth
+
+# Create DB tables
+Base.metadata.create_all(bind=engine)
 
 # CORS para que el Frontend local acceda a la API
 app.add_middleware(
@@ -30,6 +35,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth.router)
 
 class Importes(BaseModel):
     neto_gravado_21: float = 0.0

@@ -64,10 +64,13 @@ export default function Dropzone({ onFilesAdded }: DropzoneProps) {
         </div>
         
         <h3 className="text-2xl font-bold text-brand-navy mb-2 tracking-tight">
-          Suelta tus comprobantes aquí
+          Suelta tus comprobantes aqui
         </h3>
         <p className="text-brand-sage mb-6 max-w-md mx-auto text-sm leading-relaxed">
-          Arrastra hasta 50 facturas o tickets (JPG, PNG o PDF). La Inteligencia Artificial extraerá automáticamente validando contra normativa ARCA.
+          Arrastra hasta 50 comprobantes (JPG, PNG o PDF). Soporta{' '}
+          <strong>Facturas A/B/C</strong>, <strong>Tickets de Controlador Fiscal</strong>,{' '}
+          <strong>Ticket Factura</strong> y <strong>Ticket Combustible</strong>.
+          La IA identifica y extrae automaticamente segun normativa ARCA.
         </p>
         
         <div className="flex gap-4 justify-center">
@@ -83,21 +86,21 @@ export default function Dropzone({ onFilesAdded }: DropzoneProps) {
             <div className="bg-brand-light w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3">
               <CheckCircle className="w-5 h-5 text-[#4ade80]" />
             </div>
-            <span className="font-semibold text-brand-navy block mb-1">Cálculo Módulo 11</span>
-            <span className="text-brand-sage text-xs">Rechaza CUITs inválidos que la IA pueda alucinar.</span>
+            <span className="font-semibold text-brand-navy block mb-1">Calculo Modulo 11</span>
+            <span className="text-brand-sage text-xs">Rechaza CUITs invalidos que la IA pueda alucinar.</span>
          </div>
          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 transform hover:-translate-y-1 transition-all duration-300 hover:shadow-md">
             <div className="bg-brand-light w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3">
               <CheckCircle className="w-5 h-5 text-[#4ade80]" />
             </div>
-            <span className="font-semibold text-brand-navy block mb-1">Lectura Térmica</span>
-            <span className="text-brand-sage text-xs">LLM multimodal entrena en tickets arrugados B/C.</span>
+            <span className="font-semibold text-brand-navy block mb-1">Multi-Comprobante</span>
+            <span className="text-brand-sage text-xs">Tickes fiscales, Ticket Factura, Combustible y Facturas electronicas.</span>
          </div>
          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 transform hover:-translate-y-1 transition-all duration-300 hover:shadow-md">
              <div className="bg-brand-light w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3">
               <CheckCircle className="w-5 h-5 text-[#4ade80]" />
             </div>
-            <span className="font-semibold text-brand-navy block mb-1">Exportación Nativa</span>
+            <span className="font-semibold text-brand-navy block mb-1">Exportacion Nativa</span>
             <span className="text-brand-sage text-xs">Archivos listos para TXT Holistor, Tango o CSV.</span>
          </div>
       </div>

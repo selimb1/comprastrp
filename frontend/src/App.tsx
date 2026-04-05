@@ -144,8 +144,8 @@ function App() {
            {appState === 'upload' && (
              <div className="max-w-4xl mx-auto space-y-8">
                <header className="text-center max-w-2xl mx-auto">
-                  <h2 className="text-3xl font-extrabold text-brand-navy mb-3 tracking-tight">Ingesta Contable</h2>
-                  <p className="text-brand-sage">Selecciona el cliente y arrastra los comprobantes.</p>
+                  <h2 className="text-3xl font-extrabold text-brand-navy mb-3 tracking-tight">Escaner de Tickets & Comprobantes</h2>
+                  <p className="text-brand-sage">Foto del celular o PDF. Tickets fiscales, ticket factura, combustible y facturas A/B/C.</p>
                </header>
 
                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-lg mx-auto mb-6">

@@ -18,29 +18,60 @@ interface LandingPageProps {
    DATA
    ═══════════════════════════════════════════ */
 
+const TICKET_TYPES = [
+  {
+    emoji: '🧇',
+    name: 'Ticket Controlador Fiscal',
+    desc: 'Cualquier ticket emitido por impresoras fiscales homologadas. Sin CAE, sin problema.',
+    color: '#1a6b3c',
+    bg: '#d4edda',
+  },
+  {
+    emoji: '🧾',
+    name: 'Ticket Factura',
+    desc: 'Ticket Factura de controlador fiscal con numeración de factura, con o sin CAE.',
+    color: '#7f4f24',
+    bg: '#fff3cd',
+  },
+  {
+    emoji: '⛽',
+    name: 'Ticket Combustible',
+    desc: 'YPF, Shell, Axion, Puma. Con ITC discriminado y extracción inteligente de impuestos.',
+    color: '#7b2d00',
+    bg: '#ffe5d0',
+  },
+  {
+    emoji: '📄',
+    name: 'Factura Electrónica',
+    desc: 'Facturas A, B, C, M y E de ARCA. IVA discriminado o no según corresponda.',
+    color: '#0e4d92',
+    bg: '#e8f0fe',
+  },
+];
+
 const STEPS = [
   {
     icon: <Camera className="w-6 h-6" />,
-    title: 'Sacá la foto',
-    desc: 'Con tu celular o subí el PDF directo. Facturas A/B/C, tickets, remitos, retenciones.',
+    title: 'Sacá la foto del ticket',
+    desc: 'Con tu celular, en segundos. Ticket fiscal, ticket factura, combustible o factura electrónica.',
     tag: 'Captura',
   },
   {
     icon: <ScanLine className="w-6 h-6" />,
-    title: 'La IA extrae todo',
-    desc: 'CUIT, fecha, importe, IVA, tipo de comprobante — en segundos, no en minutos.',
-    tag: 'Procesamiento',
+    title: 'La IA identifica el tipo',
+    desc: 'Detecta automáticamente si es ticket fiscal, ticket factura, combustible o factura — y aplica las reglas correctas.',
+    tag: 'Clasificación IA',
   },
   {
     icon: <CheckCircle2 className="w-6 h-6" />,
-    title: 'Revisá rápido',
-    desc: 'Todo pre-completado. Corregís solo lo necesario con un par de clics.',
+    title: 'Revisá en 10 segundos',
+    desc: 'Todo pre-completado con badge del tipo detectado. Corregís solo lo necesario.',
     tag: 'Validación',
   },
   {
     icon: <Download className="w-6 h-6" />,
-    title: 'Exportá e importá',
-    desc: 'CSV, XLSX o TXT en el formato exacto de tu software. Listo para importación masiva.',
+    title: 'Exportá al software',
+    desc: 'CSV, TXT Holistor o formato Tango. Todos tus tickets listos para importar en masa.',
     tag: 'Exportación',
   },
 ];
@@ -48,23 +79,23 @@ const STEPS = [
 const BENEFITS = [
   {
     icon: <Clock className="w-5 h-5" />,
-    title: 'Más tiempo para asesorar',
-    desc: 'Reducí hasta un 80% la carga manual y dedicá esas horas a generar valor real para tus clientes.',
+    title: 'Tickets en 15 segundos',
+    desc: 'Lo que antes tomaba horas de tipeo manual ahora es una foto y un Enter. Hasta 50 tickets en minutos.',
   },
   {
     icon: <ShieldCheck className="w-5 h-5" />,
-    title: 'Menos errores, menos riesgo',
-    desc: 'Validación automática de CUIT y montos. Evitá multas y problemas con ARCA por errores de tipeo.',
+    title: 'Reglas fiscales correctas',
+    desc: 'El sistema aplica automáticamente la lógica correcta: tickets sin IVA discriminado, ITC en combustibles, detección de tipo sin configuración.',
   },
   {
     icon: <Zap className="w-5 h-5" />,
-    title: 'Compatible con tu software',
-    desc: 'Exportación nativa para Tango, Holistor, Bejerman, Contabilium y más. Sin cambiar nada.',
+    title: 'Funciona con cualquier ticket',
+    desc: 'Fotos en ángulo, tickets térmicos desteñidos, mala iluminación. Nuestro motor está entrenado para condiciones reales de campo.',
   },
   {
     icon: <BarChart3 className="w-5 h-5" />,
-    title: 'Datos tributarios seguros',
-    desc: 'Cumplimos Ley 25.326. Tus comprobantes se procesan de forma segura, sin compartir con terceros.',
+    title: 'Exportación directa al ERP',
+    desc: 'Tickets procesados listos en TXT Holistor, CSV Excel o Tango. Sin adaptaciones manuales, sin doble carga.',
   },
 ];
 
@@ -79,21 +110,21 @@ const TESTIMONIALS = [
     role: 'Socia — Romero & Asociados',
     city: 'Tucumán',
     initials: 'CR',
-    quote: 'Pasamos de 4 horas de carga manual a 45 minutos. El equipo no puede creer la diferencia.',
+    quote: 'Los tickets de combustible eran una pesadilla. Ahora los proceso en lote con la foto del celular. En serio, no lo puedo creer.',
   },
   {
     name: 'Cr. Martín Gutiérrez',
     role: 'Contador independiente',
     city: 'Córdoba',
     initials: 'MG',
-    quote: 'Con 20 clientes y trabajando solo, los cierres de mes eran un caos. Ahora proceso todo en la mitad de tiempo.',
+    quote: 'Tengo clientes con decenas de tickets fiscales por mes. ComproScan los clasifica solos — detecta el tipo y aplica las reglas correctas sin que yo toque nada.',
   },
   {
     name: 'Lic. Valeria Pereyra',
     role: 'Directora — Contabilidad Digital',
     city: 'CABA',
     initials: 'VP',
-    quote: 'Integramos con Holistor el primer día. Mi equipo de 5 personas redujo el tiempo de ingreso a la mitad.',
+    quote: 'El diferenciador es que entiende tickets de controlador fiscal, no solo facturas electrónicas. Eso es lo que realmente necesitamos en el día a día.',
   },
 ];
 
@@ -123,28 +154,28 @@ const PLANS = [
 
 const FAQS = [
   {
-    q: '¿Qué tan precisa es la extracción?',
-    a: 'Promedio 94% en documentos claros. Siempre revisás antes de exportar — el objetivo es eliminar el tipeo, no tu criterio profesional.',
+    q: '¿Detecta automáticamente si es un ticket fiscal o una factura?',
+    a: 'Sí. La IA clasifica el documento en: Ticket Controlador Fiscal, Ticket Factura, Ticket Combustible o Factura Electrónica — y aplica las reglas fiscales correctas para cada uno sin que vos configures nada.',
   },
   {
-    q: '¿Funciona con tickets térmicos desteñidos o fotos borrosas?',
-    a: 'Sí. Nuestro motor está optimizado para condiciones reales: fotos en ángulo, poca luz, tickets viejos. Donde algo no se lee con certeza, te avisamos para que completes.',
+    q: '¿Funciona con tickets térmicos desteñidos, arrugados o fotos sin iluminación?',
+    a: 'Sí. Nuestro motor está optimizado para condiciones reales de campo: fotos tomadas rápido, tickets viejos, ángulos torcidos. Donde algo no se lee con certeza, te avisamos para que completes.',
+  },
+  {
+    q: '¿Cómo maneja los tickets de combustible con ITC?',
+    a: 'Los detecta automáticamente como Ticket Combustible y mapea el Impuesto a la Transferencia de Combustibles (ITC) al campo de percepción correspondiente, listo para exportar correctamente.',
+  },
+  {
+    q: '¿Los tickets fiscales sin CUIT visible funcionan igual?',
+    a: 'Sí. Para tickets donde el CUIT no es visible, el sistema usa un placeholder y lo marca visualmente para que lo completes. El resto de los datos (importe, fecha, punto de venta) se extraen igual.',
   },
   {
     q: '¿Tengo que cambiar mi software contable actual?',
     a: 'No. Generamos el archivo en el formato exacto de tu software (Tango, Holistor, Bejerman, etc). Solo importás y listo.',
   },
   {
-    q: '¿Mis datos están seguros?',
-    a: 'Cumplimos Ley 25.326. Servidores seguros, sin compartir con terceros. Podés solicitar la eliminación permanente en cualquier momento.',
-  },
-  {
-    q: '¿Necesito instalar algo?',
-    a: 'No. ComproScan AR es 100% web. Entrás desde cualquier navegador, en cualquier dispositivo. Sin licencias, sin IT.',
-  },
-  {
     q: '¿Puedo probar gratis sin tarjeta?',
-    a: '30 días gratis, sin tarjeta, sin compromiso. Procesás comprobantes reales y decidís. Si no te convence, no pagás nada.',
+    a: '30 días gratis, sin tarjeta, sin compromiso. Procesás tickets y comprobantes reales y decidís. Si no te convence, no pagás nada.',
   },
 ];
 
@@ -274,20 +305,30 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left — Copy */}
             <div className="max-w-xl">
-              <Badge className="bg-[#E8F8ED] text-[#1B8C3A] mb-6">
+              <Badge className="bg-[#FFF3E0] text-[#E65100] mb-6">
                 <Sparkles className="w-3 h-3" />
-                IA para documentos fiscales argentinos
+                El escáner de tickets #1 para contadores argentinos
               </Badge>
 
               <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-extrabold text-[#0A1128] leading-[1.08] tracking-[-0.03em] mb-5">
-                Dejá de cargar<br />
-                comprobantes.
+                Foto al ticket,<br />
+                <span className="text-[#005477]">datos en segundos.</span>
               </h1>
 
-              <p className="text-[17px] sm:text-[18px] text-[#6C757D] leading-relaxed mb-8 max-w-md">
-                Sacá una foto, la IA extrae los datos y vos descargás el archivo listo para importar en tu software contable.{' '}
-                <span className="text-[#495057] font-medium">Sin cambiar tu sistema actual.</span>
+              <p className="text-[17px] sm:text-[18px] text-[#6C757D] leading-relaxed mb-6 max-w-md">
+                Tickets de controlador fiscal, ticket factura, combustible y facturas electrónicas.
+                La IA detecta el tipo, aplica las reglas fiscales y exporta al formato de tu software.{' '}
+                <span className="text-[#495057] font-medium">Sin configuración, sin errores.</span>
               </p>
+
+              {/* Pill tags de tipos */}
+              <div className="flex flex-wrap gap-2 mb-8">
+                {['🧇 Ticket Controlador Fiscal', '🧾 Ticket Factura', '⛽ Ticket Combustible', '📄 Factura A/B/C'].map((tag) => (
+                  <span key={tag} className="text-[12px] font-semibold px-3 py-1.5 bg-white border border-[#E9ECEF] rounded-full text-[#495057] shadow-sm">
+                    {tag}
+                  </span>
+                ))}
+              </div>
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3 mb-8">
@@ -295,7 +336,7 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
                   onClick={onSignUp}
                   className="group h-12 px-7 bg-[#005477] hover:bg-[#003B53] text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-[#005477]/20 hover:shadow-xl hover:shadow-[#005477]/30 hover:-translate-y-px active:translate-y-0 flex items-center gap-2 justify-center text-[15px]"
                 >
-                  Comenzá tu prueba gratis
+                  Escaneá tu primer ticket gratis
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </button>
                 <button
@@ -343,23 +384,29 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
                     </div>
                   </div>
 
-                  {/* Review card mockup */}
+                  {/* Review card mockup — Ticket Combustible */}
                   <div className="bg-white rounded-xl border border-black/[0.06] p-4 mb-3">
+                    {/* Badge de tipo */}
+                    <div className="mb-3">
+                      <span className="text-[9px] font-bold px-2 py-1 rounded-full" style={{ color: '#7b2d00', background: '#ffe5d0' }}>⛽ Ticket Combustible</span>
+                    </div>
                     <div className="flex items-start gap-4">
-                      {/* Image placeholder */}
-                      <div className="w-24 h-32 bg-gradient-to-br from-[#E8F0F5] to-[#F1F3F5] rounded-lg flex flex-col items-center justify-center border border-black/[0.04] shrink-0">
-                        <FileText className="w-6 h-6 text-[#ADB5BD] mb-1" />
-                        <span className="text-[8px] text-[#ADB5BD] font-medium">FACTURA A</span>
+                      {/* Image placeholder ticket */}
+                      <div className="w-20 h-32 bg-gradient-to-br from-[#FFF3E0] to-[#FFCCBC] rounded-lg flex flex-col items-center justify-center border border-orange-100 shrink-0">
+                        <span className="text-2xl mb-1">⛽</span>
+                        <span className="text-[8px] text-orange-400 font-bold">YPF S.A.</span>
+                        <span className="text-[7px] text-orange-300 mt-0.5">TICKET</span>
                       </div>
                       {/* Fields */}
-                      <div className="flex-1 space-y-2.5">
+                      <div className="flex-1 space-y-2">
                         {[
-                          ['Emisor', 'Distribuidora Norte SRL'],
-                          ['CUIT', '30-71659820-4'],
-                          ['Fecha', '28/03/2026'],
-                          ['Neto Gravado', '$148.350,00'],
-                          ['IVA 21%', '$31.153,50'],
-                          ['Total', '$179.503,50'],
+                          ['Tipo', 'Ticket Combustible'],
+                          ['Emisor', 'YPF S.A.'],
+                          ['CUIT', '30-54668997-9'],
+                          ['Fecha', '03/04/2026'],
+                          ['Base', '$45.200,00'],
+                          ['ITC', '$8.100,00'],
+                          ['Total', '$53.300,00'],
                         ].map(([k, v]) => (
                           <div key={k} className="flex items-center justify-between">
                             <span className="text-[10px] text-[#868E96] font-medium">{k}</span>
@@ -368,7 +415,7 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
                         ))}
                       </div>
                     </div>
-                    <div className="flex gap-2 mt-4">
+                    <div className="flex gap-2 mt-3">
                       <div className="flex-1 h-8 bg-[#E8F8ED] text-[#1B8C3A] text-[10px] font-bold rounded-lg flex items-center justify-center gap-1">
                         <Check className="w-3 h-3" /> Aprobar
                       </div>
@@ -381,9 +428,9 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
                   {/* Progress */}
                   <div className="flex items-center gap-2">
                     <div className="flex-1 h-1.5 bg-[#E9ECEF] rounded-full overflow-hidden">
-                      <div className="w-2/3 h-full bg-[#005477] rounded-full" />
+                      <div className="w-1/3 h-full bg-[#005477] rounded-full" />
                     </div>
-                    <span className="text-[10px] text-[#868E96] font-medium">2 de 3</span>
+                    <span className="text-[10px] text-[#868E96] font-medium">1 de 8</span>
                   </div>
                 </div>
               </div>
@@ -394,9 +441,9 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
                   <div className="w-12 h-1.5 bg-white/20 rounded-full" />
                 </div>
                 <div className="p-3 bg-[#F5F7F6]">
-                  <div className="w-full aspect-[3/4] bg-gradient-to-br from-[#E8F0F5] to-white rounded-lg border border-black/[0.04] flex flex-col items-center justify-center">
-                    <Camera className="w-6 h-6 text-[#005477] mb-1.5" />
-                    <span className="text-[8px] text-[#868E96] font-semibold">Capturar</span>
+                  <div className="w-full aspect-[3/4] bg-gradient-to-br from-[#FFF3E0] to-white rounded-lg border border-orange-100 flex flex-col items-center justify-center">
+                    <span className="text-2xl mb-1">⛽</span>
+                    <span className="text-[8px] text-orange-400 font-semibold">Ticket</span>
                   </div>
                   <div className="mt-2 h-5 bg-[#005477] rounded-md flex items-center justify-center">
                     <span className="text-[7px] text-white font-bold">ESCANEAR</span>
@@ -406,12 +453,12 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
 
               {/* Processing badge */}
               <div className="absolute -top-3 -right-3 bg-white rounded-xl border border-black/[0.06] shadow-lg shadow-black/[0.06] px-3.5 py-2.5 hidden lg:flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-[#E8F8ED] flex items-center justify-center">
-                  <Zap className="w-3 h-3 text-[#34C759]" />
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-sm" style={{ background: '#ffe5d0' }}>
+                  ⛽
                 </div>
                 <div>
                   <div className="text-[10px] font-bold text-[#0A1128]">IA procesando...</div>
-                  <div className="text-[9px] text-[#34C759] font-medium">Factura A detectada</div>
+                  <div className="text-[9px] font-medium" style={{ color: '#7b2d00' }}>Ticket Combustible ✓</div>
                 </div>
               </div>
             </div>
@@ -425,14 +472,51 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
         <div className="max-w-[1200px] mx-auto px-5">
           <div className="flex flex-wrap justify-center gap-x-10 gap-y-4 items-center">
             {[
-              { value: '80%', label: 'menos tiempo de carga' },
-              { value: '94%', label: 'precisión promedio' },
-              { value: '15 seg', label: 'por comprobante' },
-              { value: '+100', label: 'contadores en Argentina' },
+              { value: '4 tipos', label: 'de comprobante detectados por IA' },
+              { value: '94%', label: 'precisión en tickets fiscales' },
+              { value: '15 seg', label: 'por ticket o comprobante' },
+              { value: '0 config', label: 'para empezar a escanear' },
             ].map((m) => (
               <div key={m.label} className="flex items-center gap-2.5">
                 <span className="text-[22px] font-extrabold text-[#0A1128] tracking-tight">{m.value}</span>
                 <span className="text-[12px] text-[#868E96] font-medium leading-tight">{m.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+      {/* ━━━ TIPOS DE COMPROBANTES ━━━ */}
+      <section className="py-16 bg-gradient-to-b from-[#F5F7F6] to-white">
+        <div className="max-w-[1200px] mx-auto px-5">
+          <div className="text-center mb-10">
+            <Badge className="bg-[#FFF3E0] text-[#E65100] mb-4">
+              <Sparkles className="w-3 h-3" />
+              Comprobantes soportados
+            </Badge>
+            <h2 className="text-[28px] sm:text-[36px] font-extrabold text-[#0A1128] tracking-[-0.02em] mb-3">
+              El único sistema que entiende todos tus tickets
+            </h2>
+            <p className="text-[15px] text-[#868E96] max-w-lg mx-auto">
+              No solo facturas electrónicas. ComproScan es el primer escáner fiscal que clasifica y procesa tickets de controlador fiscal con las reglas correctas.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {TICKET_TYPES.map((t) => (
+              <div
+                key={t.name}
+                className="group bg-white rounded-2xl border-2 border-[#E9ECEF] hover:border-opacity-100 p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                style={{ borderColor: 'transparent', boxShadow: '0 0 0 2px ' + t.bg }}
+              >
+                <div
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-4"
+                  style={{ background: t.bg }}
+                >
+                  {t.emoji}
+                </div>
+                <h3 className="text-[15px] font-bold mb-2" style={{ color: t.color }}>{t.name}</h3>
+                <p className="text-[13px] text-[#868E96] leading-relaxed">{t.desc}</p>
               </div>
             ))}
           </div>
@@ -446,10 +530,10 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
           <div className="text-center mb-16">
             <Badge className="bg-[#005477]/[0.08] text-[#005477] mb-4">Cómo funciona</Badge>
             <h2 className="text-[32px] sm:text-[40px] font-extrabold text-[#0A1128] tracking-[-0.02em] mb-3">
-              De la foto al archivo importable
+              Del ticket escaneado al archivo listo
             </h2>
             <p className="text-[16px] text-[#868E96] max-w-md mx-auto">
-              Sin curvas de aprendizaje. Sin cambiar tu proceso. Cuatro pasos simples.
+              Sin curvas de aprendizaje. Cuatro pasos y el sistema hace el resto.
             </p>
           </div>
 
@@ -510,12 +594,12 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
       <section id="beneficios" className="py-24 lg:py-32 bg-white border-y border-black/[0.04]">
         <div className="max-w-[1200px] mx-auto px-5">
           <div className="max-w-xl mb-14">
-            <Badge className="bg-[#E8F8ED] text-[#1B8C3A] mb-4">Beneficios</Badge>
+            <Badge className="bg-[#FFF3E0] text-[#E65100] mb-4">Por qué elegir ComproScan</Badge>
             <h2 className="text-[32px] sm:text-[40px] font-extrabold text-[#0A1128] tracking-[-0.02em] mb-3">
-              Cambiá cómo trabaja tu estudio
+              Diseñado para tickets reales, no solo facturas
             </h2>
             <p className="text-[16px] text-[#868E96]">
-              Resultados concretos desde el primer día, reportados por estudios contables de todo el país.
+              Los tickets fiscales son el mayor volumen de comprobantes en cualquier estudio. ComproScan es el único que los procesa correctamente.
             </p>
           </div>
 
@@ -740,11 +824,11 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
 
         <div className="relative max-w-[560px] mx-auto px-5 text-center">
           <h2 className="text-[32px] sm:text-[44px] font-extrabold text-white tracking-[-0.03em] leading-[1.1] mb-4">
-            Dejá de cargar.<br />
-            <span className="text-[#005477]">Empezá a escanear.</span>
+            Tu próximo ticket fiscal,<br />
+            <span className="text-[#005477]">en 15 segundos.</span>
           </h2>
           <p className="text-[16px] text-white/50 mb-10 max-w-sm mx-auto">
-            En 30 segundos tenés tu cuenta activa y procesás tu primer comprobante.
+            Foto, IA que detecta el tipo y aplica las reglas, exportación con un click. Sin errores, sin retrasos.
           </p>
 
           {/* Inline form */}

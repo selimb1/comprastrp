@@ -1,4 +1,4 @@
-import { Home, UploadCloud, FileSpreadsheet, Settings, Briefcase, BarChart3 } from 'lucide-react';
+import { Home, UploadCloud, FileSpreadsheet, Settings, Briefcase, BarChart3, Scan } from 'lucide-react';
 
 interface SidebarProps {
   currentMenu: string;
@@ -21,13 +21,13 @@ export default function Sidebar({ currentMenu, setMenu }: SidebarProps) {
         <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
           ComproScan <span className="text-brand-sage font-medium text-lg">AR</span>
         </h1>
-        <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-1">Estudio Demo Partners</p>
+        <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-1">Escaner de Tickets & Facturas</p>
       </div>
 
       <div className="px-4 py-6">
          <button className="w-full bg-brand-sage text-brand-navy font-bold py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-[#68A392] transition-colors shadow-md mb-8" onClick={() => setMenu('upload')}>
-            <UploadCloud size={20} />
-            Subir Facturas
+            <Scan size={20} />
+            Escanear Tickets
          </button>
 
          <nav className="flex flex-col gap-2">

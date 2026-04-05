@@ -59,6 +59,10 @@ class Importes(BaseModel):
     total: float
 
 class ComprobanteAFIP(BaseModel):
+    tipo_documento: str = Field(
+        default="factura",
+        description="Categoría del comprobante: 'factura' | 'ticket_fiscal' | 'ticket_factura' | 'ticket_combustible'"
+    )
     tipo_comprobante: str = Field(..., description="Tipo como A, B, C, M, E, T, etc.")
     codigo_afip_sugerido: Optional[int] = None
     punto_venta: str = Field(..., description="Punto de venta de 4 a 5 dígitos")
@@ -94,12 +98,38 @@ async def process_file(file: UploadFile = File(...), client_id: Optional[str] = 
         
         SYSTEM_PROMPT = """Actúa como un Contador Público Nacional de Argentina experto en facturación ARCA.
 Extrae los datos del comprobante fiscal (foto provista) estrictamente en el esquema solicitado.
-Reglas IMPORTANTES y OBLIGATORIAS:
+
+== IDENTIFICACIÓN DEL TIPO DE DOCUMENTO ==
+Clasifica el comprobante en el campo "tipo_documento" con uno de estos valores EXACTOS:
+- "factura"          → Facturas electrónicas (A, B, C, M, E) emitidas por el sistema de facturación electrónica de ARCA. Tienen CAE.
+- "ticket_fiscal"   → Tickets emitidos por equipos de Controlador Fiscal (impresoras fiscales). NO tienen CAE. Tienen un número de comprobante del equipo fiscal. Pueden decir "Ticket", "COMPROBANTE X" o similares. El tipo suele ser solo el número de letra (A, B) o directamente sin letra.
+- "ticket_factura"  → Ticket Factura o Ticket Factura de Controlador Fiscal. Combina características de factura y ticket. Tienen número de factura pero emitido desde equipo fiscal.
+- "ticket_combustible" → Ticket o Factura de estación de servicio / combustible (YPF, Shell, Axion, Puma, etc.). Suelen desglosar impuestos al combustible. Pueden estar generados por controlador fiscal o electrónicamente.
+
+== REGLAS PARA FACTURAS ELECTRÓNICAS (tipo_documento = "factura") ==
 1. Facturas A y M: El IVA se desglosa del precio neto (discriminado). Extrae los montos de neto_gravado_* e iva_*.
 2. Facturas B, C, E y T: NO discriminan IVA (o está incluido/no alcanzado). DEBES devolver todos los campos iva_* y neto_gravado_* en 0. Asigna el importe total ÚNICAMENTE al campo "total" (o también a "no_gravado"/"exento" si el comprobante así lo dice expresamente). JAMAS deduzcas matemáticamente el IVA de una Factura B.
-3. Asegúrate de que la matemática cierre perfecto (netos + ivas + percepciones + exento/no_gravado = total). Si pones todo en "total" para B/C, pon 0 en netos e ivas.
-4. Entiende "F.B." como Factura B y "F.A." como Factura A.
-5. Las fechas en formato YYYY-MM-DD.
+
+== REGLAS PARA TICKETS FISCALES (tipo_documento = "ticket_fiscal") ==
+3. Los tickets de controlador fiscal generalmente NO discriminan IVA visible. Pon iva_* y neto_gravado_* en 0. El importe total va en el campo "total".
+4. Si el ticket dice expresamente "IVA 21%: $XXX" o discrimina el IVA, entonces sí extraer neto_gravado_21 e iva_21.
+5. El campo "cae" debe ser null para tickets fiscales (no tienen CAE). En cambio pueden tener un número de comprobante interno del equipo.
+6. El punto_venta es el número de la caja/equipo fiscal.
+
+== REGLAS PARA TICKET FACTURA (tipo_documento = "ticket_factura") ==
+7. Similar a factura electrónica pero emitido por equipo fiscal. Si tiene letra A, discrimina IVA. Si tiene letra B, no discrimina.
+8. Puede o no tener CAE. Extraer si está presente.
+
+== REGLAS PARA TICKET COMBUSTIBLE (tipo_documento = "ticket_combustible") ==
+9. Los tickets de combustible pueden tener IVA discriminado o no. Si lo discriminan, extraer neto_gravado_21 e iva_21.
+10. Combustibles (nafta, gasoil) tienen alícuota de IVA del 21% más impuestos internos al combustible. Si ves "Imp. Transferencia Combustibles" o "ITC", ese monto va en percepcion_iva (campo más cercano disponible).
+11. El emisor suele ser la estación de servicio (ej: YPF S.A., SHELL COMPAÑIA ARGENTINA DE PETROLEO S.A., etc.).
+
+== REGLAS GENERALES ==
+12. Asegúrate de que la matemática cierre perfecto (netos + ivas + percepciones + exento/no_gravado = total).
+13. Entiende "F.B." como Factura B y "F.A." como Factura A.
+14. Las fechas en formato YYYY-MM-DD.
+15. Si el CUIT no está visible (ej. ticket simple sin CUIT), usa "00000000000" como placeholder.
 """
         
         image_part = types.Part.from_bytes(data=contents, mime_type=mime_type)

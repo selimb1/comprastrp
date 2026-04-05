@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react';
 import { FileText, AlertTriangle, ArrowRight } from 'lucide-react';
 
 interface ExtractedData {
+  tipo_documento?: string;
   tipo_comprobante: string;
   punto_venta: string;
   numero_comprobante: string;
@@ -66,7 +67,20 @@ export default function ReviewPanel({ imagePreviewUrl, extractedData, isLoading,
   const mathCalculado = (formData.importes.neto_gravado_21 || 0) + (formData.importes.iva_21 || 0) + noGravadoExento;
   
   const tipo = formData.tipo_comprobante?.toUpperCase().replace(/FACTURA|TIPO|F\./g, '').trim();
-  const isSinIvaDiscriminado = ['B', 'C', 'E', 'T'].includes(tipo);
+  
+  // Tickets fiscales y Tickets Factura/Combustible no discriminan IVA (igual que B/C)
+  const tipoDoc = formData.tipo_documento || 'factura';
+  const isTicket = ['ticket_fiscal', 'ticket_factura', 'ticket_combustible'].includes(tipoDoc);
+  const isSinIvaDiscriminado = ['B', 'C', 'E', 'T'].includes(tipo) || isTicket;
+
+  // Badge metadata para el tipo de documento
+  const docTypeMeta: Record<string, { label: string; color: string; bg: string }> = {
+    factura:           { label: '\uD83D\uDCC4 Factura Electrónica', color: '#0e4d92', bg: '#e8f0fe' },
+    ticket_fiscal:     { label: '\uD83E\uDDE7 Ticket Controlador Fiscal', color: '#1a6b3c', bg: '#d4edda' },
+    ticket_factura:    { label: '\uD83E\uDDFE Ticket Factura', color: '#7f4f24', bg: '#fff3cd' },
+    ticket_combustible:{ label: '\u26FD Ticket Combustible', color: '#7b2d00', bg: '#ffe5d0' },
+  };
+  const docMeta = docTypeMeta[tipoDoc] || docTypeMeta['factura'];
 
   let isMathValid = false;
   if (isSinIvaDiscriminado && mathCalculado === 0) {
@@ -121,6 +135,13 @@ export default function ReviewPanel({ imagePreviewUrl, extractedData, isLoading,
              <p className="text-sm text-gray-500 mt-1">
                Corrobora y oprime <kbd className="bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 text-xs font-mono text-gray-600 shadow-sm mx-1">ENTER</kbd> para aprobar.
              </p>
+             {/* Badge tipo de documento */}
+             <span
+               className="inline-block mt-2 text-[11px] font-bold px-3 py-1 rounded-full tracking-wide"
+               style={{ color: docMeta.color, background: docMeta.bg }}
+             >
+               {docMeta.label}
+             </span>
            </div>
            {(!isMathValid || !isValidCuit) && (
              <div className="bg-red-50 text-red-700 px-3 py-2 rounded-lg flex items-center gap-2 text-[13px] font-semibold border border-red-200 shadow-sm">

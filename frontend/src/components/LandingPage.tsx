@@ -333,13 +333,12 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
               </Badge>
 
               <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-extrabold text-[#0A1128] leading-[1.08] tracking-[-0.03em] mb-5">
-                Foto{' '}
                 <span
                   style={{
                     display: 'inline-block',
                     overflow: 'hidden',
                     verticalAlign: 'bottom',
-                    lineHeight: '1.08',
+                    lineHeight: '1.15',
                   }}
                 >
                   <span
@@ -354,10 +353,10 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {HERO_WORDS[heroWordIdx].prep}{' '}{HERO_WORDS[heroWordIdx].word}
+                    Foto {HERO_WORDS[heroWordIdx].prep}{' '}{HERO_WORDS[heroWordIdx].word},
                   </span>
                 </span>
-                ,<br />
+                <br />
                 <span className="text-[#005477]">datos en segundos.</span>
               </h1>
 

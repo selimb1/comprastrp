@@ -9,6 +9,7 @@ import {
 interface LandingPageProps {
   onLogin: () => void;
   onSignUp: () => void;
+  onCheckout: (plan: string) => void;
 }
 
 
@@ -163,7 +164,7 @@ function Badge({ children, className = '' }: { children: React.ReactNode; classN
    MAIN
    ═══════════════════════════════════════════ */
 
-export default function LandingPage({ onLogin, onSignUp }: LandingPageProps) {
+export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPageProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -676,13 +677,13 @@ export default function LandingPage({ onLogin, onSignUp }: LandingPageProps) {
                 </ul>
 
                 <button
-                  onClick={onSignUp}
+                  onClick={() => plan.price === 'A medida' ? onSignUp() : onCheckout(plan.name.toLowerCase())}
                   className={`w-full h-10 rounded-xl text-[13px] font-semibold transition-all ${plan.popular
                     ? 'bg-white text-[#0A1128] hover:bg-[#F1F3F5]'
                     : 'bg-[#F1F3F5] text-[#0A1128] hover:bg-[#E9ECEF] border border-[#E9ECEF]'
                     }`}
                 >
-                  {plan.price === 'A medida' ? 'Hablar con un asesor' : 'Empezar gratis'}
+                  {plan.price === 'A medida' ? 'Hablar con un asesor' : 'Suscribirme →'}
                 </button>
               </div>
             ))}

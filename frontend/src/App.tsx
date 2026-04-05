@@ -14,6 +14,7 @@ import axios from 'axios';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/auth/LoginPage';
 import SignUpPage from './pages/auth/SignUpPage';
+import CheckoutPage from './pages/CheckoutPage';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -232,11 +233,13 @@ function App() {
           ? <LandingPage
               onLogin={() => navigate('/login')}
               onSignUp={() => navigate('/signup')}
+              onCheckout={(plan) => navigate(`/checkout?plan=${plan}`)}
             />
           : <Navigate to="/dashboard" />
       } />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/checkout" element={<CheckoutPage />} />
       <Route path="/dashboard" element={renderDashboard()} />
     </Routes>
   );

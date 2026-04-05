@@ -427,7 +427,7 @@ export default function LandingPage({ onLogin, onSignUp }: LandingPageProps) {
               { value: '80%', label: 'menos tiempo de carga' },
               { value: '94%', label: 'precisión promedio' },
               { value: '15 seg', label: 'por comprobante' },
-              { value: '+500', label: 'contadores en Argentina' },
+              { value: '+100', label: 'contadores en Argentina' },
             ].map((m) => (
               <div key={m.label} className="flex items-center gap-2.5">
                 <span className="text-[22px] font-extrabold text-[#0A1128] tracking-tight">{m.value}</span>

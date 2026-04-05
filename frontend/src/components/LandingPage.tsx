@@ -205,7 +205,12 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
   const stepsRef = useRef<HTMLDivElement>(null);
 
   // Hero word cycling — Apple Mac Mini style
-  const HERO_WORDS = ['ticket', 'ticket factura', 'ticket combustible', 'factura'];
+  const HERO_WORDS = [
+    { word: 'ticket',             color: '#005477', prep: 'al' },
+    { word: 'ticket factura',     color: '#1B6B3A', prep: 'al' },
+    { word: 'ticket combustible', color: '#7B3F00', prep: 'al' },
+    { word: 'factura',            color: '#1A3A6B', prep: 'a la' },
+  ];
   const [heroWordIdx, setHeroWordIdx] = useState(0);
   const [heroVisible, setHeroVisible] = useState(true);
 
@@ -328,7 +333,7 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
               </Badge>
 
               <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-extrabold text-[#0A1128] leading-[1.08] tracking-[-0.03em] mb-5">
-                Foto al{' '}
+                Foto{' '}
                 <span
                   style={{
                     display: 'inline-block',
@@ -345,11 +350,11 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
                       transition: heroVisible
                         ? 'transform 0.42s cubic-bezier(0.22,1,0.36,1), opacity 0.32s ease'
                         : 'transform 0.30s cubic-bezier(0.55,0,1,0.45), opacity 0.22s ease',
-                      color: '#005477',
+                      color: HERO_WORDS[heroWordIdx].color,
                       whiteSpace: 'nowrap',
                     }}
                   >
-                    {HERO_WORDS[heroWordIdx]}
+                    {HERO_WORDS[heroWordIdx].prep}{' '}{HERO_WORDS[heroWordIdx].word}
                   </span>
                 </span>
                 ,<br />

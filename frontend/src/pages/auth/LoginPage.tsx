@@ -12,15 +12,30 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 export default function LoginPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    console.log("🔐 Intentando login a:", `${API_URL}/auth/login`);
+
     try {
       const response = await axios.post(`${API_URL}/auth/login`, formData);
       localStorage.setItem('access_token', response.data.access_token);
       navigate("/dashboard");
     } catch (e: any) {
-      alert("Credenciales incorrectas o error en el servidor: " + (e.response?.data?.detail || e.message));
+      console.error("❌ Error en login:", e);
+      const msg = e.response?.data?.detail || e.message || "Error desconocido";
+      if (e.code === "ERR_NETWORK" || e.message?.includes("localhost")) {
+        setError("No se puede conectar al servidor. Verificá tu conexión o contactá soporte.");
+      } else {
+        setError(msg);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -43,6 +58,8 @@ export default function LoginPage() {
                 className="h-12 border-slate-200 focus-visible:ring-emerald-500 shadow-sm"
                 value={formData.email}
                 onChange={e => setFormData({ ...formData, email: e.target.value })}
+                disabled={isLoading}
+                required
               />
               <Input 
                 type="password" 
@@ -50,8 +67,17 @@ export default function LoginPage() {
                 className="h-12 border-slate-200 focus-visible:ring-emerald-500 shadow-sm"
                 value={formData.password}
                 onChange={e => setFormData({ ...formData, password: e.target.value })}
+                disabled={isLoading}
+                required
               />
             </div>
+
+            {/* Error message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+                {error}
+              </div>
+            )}
 
             <div className="flex items-center justify-between mt-4">
               <div className="flex items-center space-x-2">
@@ -66,8 +92,22 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <Button type="submit" className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg shadow-md transition-all">
-              Ingresar a la plataforma
+            <Button 
+              type="submit" 
+              className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg shadow-md transition-all"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Ingresando...
+                </span>
+              ) : (
+                "Ingresar a la plataforma"
+              )}
             </Button>
           </form>
 

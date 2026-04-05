@@ -204,6 +204,11 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
   const [activeStep, setActiveStep] = useState(0);
   const stepsRef = useRef<HTMLDivElement>(null);
 
+  // Hero word cycling — Apple Mac Mini style
+  const HERO_WORDS = ['ticket', 'ticket factura', 'ticket combustible', 'factura'];
+  const [heroWordIdx, setHeroWordIdx] = useState(0);
+  const [heroVisible, setHeroVisible] = useState(true);
+
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', h, { passive: true });
@@ -214,6 +219,18 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
   useEffect(() => {
     const t = setInterval(() => setActiveStep((s) => (s + 1) % 4), 3500);
     return () => clearInterval(t);
+  }, []);
+
+  // Hero word animation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHeroVisible(false);
+      setTimeout(() => {
+        setHeroWordIdx((i) => (i + 1) % HERO_WORDS.length);
+        setHeroVisible(true);
+      }, 380);
+    }, 2400);
+    return () => clearInterval(interval);
   }, []);
 
   const scroll = (id: string) => {
@@ -311,7 +328,31 @@ export default function LandingPage({ onLogin, onSignUp, onCheckout }: LandingPa
               </Badge>
 
               <h1 className="text-[40px] sm:text-[48px] lg:text-[56px] font-extrabold text-[#0A1128] leading-[1.08] tracking-[-0.03em] mb-5">
-                Foto al ticket,<br />
+                Foto al{' '}
+                <span
+                  style={{
+                    display: 'inline-block',
+                    overflow: 'hidden',
+                    verticalAlign: 'bottom',
+                    lineHeight: '1.08',
+                  }}
+                >
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      transform: heroVisible ? 'translateY(0)' : 'translateY(-110%)',
+                      opacity: heroVisible ? 1 : 0,
+                      transition: heroVisible
+                        ? 'transform 0.42s cubic-bezier(0.22,1,0.36,1), opacity 0.32s ease'
+                        : 'transform 0.30s cubic-bezier(0.55,0,1,0.45), opacity 0.22s ease',
+                      color: '#005477',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {HERO_WORDS[heroWordIdx]}
+                  </span>
+                </span>
+                ,<br />
                 <span className="text-[#005477]">datos en segundos.</span>
               </h1>
 

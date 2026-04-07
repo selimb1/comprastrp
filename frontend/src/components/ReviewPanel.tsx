@@ -67,9 +67,25 @@ export default function ReviewPanel({
         percepcion_iva: 0, percepcion_iibb: 0, percepcion_ganancias: 0, percepcion_suss: 0,
         total: 0,
       };
+
+      // Limpieza defensiva en frontend (por si el backend tarda en actualizar o la IA fuerza datos)
+      let parsedImportes = { ...defaultImportes, ...extractedData.importes };
+      const tipoDoc = extractedData.tipo_documento || 'factura';
+      const tipoComp = (extractedData.tipo_comprobante || '').toUpperCase().replace(/FACTURA|TIPO|F\./g, '').trim();
+      const isSinIva = ['B', 'C', 'E', 'T'].includes(tipoComp) || tipoDoc === 'ticket_fiscal';
+
+      if (isSinIva) {
+        parsedImportes.neto_gravado_21 = 0;
+        parsedImportes.neto_gravado_105 = 0;
+        parsedImportes.neto_gravado_27 = 0;
+        parsedImportes.iva_21 = 0;
+        parsedImportes.iva_105 = 0;
+        parsedImportes.iva_27 = 0;
+      }
+
       setFormData({
         ...extractedData,
-        importes: { ...defaultImportes, ...extractedData.importes },
+        importes: parsedImportes,
       });
     }
   }, [extractedData]);

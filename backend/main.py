@@ -80,71 +80,133 @@ def health_check():
 
 from fastapi import Form
 
+# Tipos de archivo aceptados (extensiones y MIME types)
+ACCEPTED_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.pdf', '.heic', '.heif', '.webp', '.bmp', '.tiff', '.tif'}
+ACCEPTED_MIME_PREFIXES = ('image/', 'application/pdf')
+
+def is_valid_file(filename: str, content_type: str) -> bool:
+    """Valida por extensión O por MIME type para máxima compatibilidad (iPhone HEIC, etc.)"""
+    ext_valid = any(filename.lower().endswith(ext) for ext in ACCEPTED_EXTENSIONS)
+    mime_valid = content_type and any(content_type.startswith(p) for p in ACCEPTED_MIME_PREFIXES)
+    # Si no tiene extensión válida pero el MIME sí es imagen/pdf, igual aceptar
+    return ext_valid or mime_valid
+
 @app.post("/api/v1/extract", response_model=ComprobanteAFIP)
 async def process_file(file: UploadFile = File(...), client_id: Optional[str] = Form(None)):
     """
-    Recibe un archivo y delega el análisis al motor de IA multimodelo (OpenAI).
+    Recibe un archivo (imagen o PDF) y delega el análisis al motor de IA Gemini.
+    Soporta JPG, PNG, PDF, HEIC (iPhone), WEBP, BMP, TIFF.
     """
-    if not file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.pdf')):
-        raise HTTPException(status_code=400, detail="El archivo debe ser una imagen o PDF.")
+    filename = file.filename or ""
+    content_type = file.content_type or "application/octet-stream"
+    
+    if not is_valid_file(filename, content_type):
+        raise HTTPException(
+            status_code=400, 
+            detail=f"El archivo '{filename}' no es válido. Se aceptan imágenes (JPG, PNG, HEIC, WEBP) o PDF."
+        )
+    
+    # Mapeo de códigos AFIP según tipo de comprobante (RG 3685)
+    CODIGO_AFIP_MAP = {
+        # Facturas electrónicas
+        'A': 1, 'B': 6, 'C': 11, 'M': 51, 'E': 19, 'T': 15,
+        # Notas de débito
+        'ND A': 2, 'ND B': 7, 'ND C': 12,
+        # Notas de crédito  
+        'NC A': 3, 'NC B': 8, 'NC C': 13,
+    }
     
     try:
         contents = await file.read()
-        base64_image = base64.b64encode(contents).decode("utf-8")
         
-        # En caso de PDF, requeriría pdf2image, pero lo simplificamos para el MVP con imágenes directas.
-        mime_type = file.content_type if file.content_type else "image/jpeg"
+        # Normalizar MIME type: HEIC/HEIF → image/jpeg para compatibilidad con Gemini
+        mime_type = content_type
+        if mime_type in ('image/heic', 'image/heif', 'application/octet-stream') or not mime_type:
+            mime_type = "image/jpeg"
+        # Asegurar que PDF tiene el MIME correcto
+        if filename.lower().endswith('.pdf'):
+            mime_type = "application/pdf"
         
-        SYSTEM_PROMPT = """Actúa como un Contador Público Nacional de Argentina experto en facturación ARCA.
-Extrae los datos del comprobante fiscal (foto provista) estrictamente en el esquema solicitado.
+        SYSTEM_PROMPT = """Eres un Contador Público Nacional argentino experto en comprobantes fiscales ARCA/AFIP.
+Analiza el comprobante en la imagen y extrae todos los datos en el esquema JSON solicitado.
 
 == IDENTIFICACIÓN DEL TIPO DE DOCUMENTO ==
-Clasifica el comprobante en el campo "tipo_documento" con uno de estos valores EXACTOS:
-- "factura"          → Facturas electrónicas (A, B, C, M, E) emitidas por el sistema de facturación electrónica de ARCA. Tienen CAE.
-- "ticket_fiscal"   → Tickets emitidos por equipos de Controlador Fiscal (impresoras fiscales). NO tienen CAE. Tienen un número de comprobante del equipo fiscal. Pueden decir "Ticket", "COMPROBANTE X" o similares. El tipo suele ser solo el número de letra (A, B) o directamente sin letra.
-- "ticket_factura"  → Ticket Factura o Ticket Factura de Controlador Fiscal. Combina características de factura y ticket. Tienen número de factura pero emitido desde equipo fiscal.
-- "ticket_combustible" → Ticket o Factura de estación de servicio / combustible (YPF, Shell, Axion, Puma, etc.). Suelen desglosar impuestos al combustible. Pueden estar generados por controlador fiscal o electrónicamente.
+Clasifica en "tipo_documento" con uno de estos valores EXACTOS (sin variaciones):
+- "factura"            → Facturas electrónicas con CAE (A, B, C, M, E). Emitidas digitalmente.
+- "ticket_fiscal"      → Tickets de Controlador Fiscal (impresoras fiscales registradas en ARCA). Tienen número de equipo fiscal. SIN CAE. Pueden decir "Ticket", "Comp. X", "Comprobante", o simplemente tener logo de la empresa y totales.
+- "ticket_factura"     → Ticket Factura emitido por Controlador Fiscal. Tiene numeración tipo factura (XXXXX-YYYYYYYY) pero emitido desde equipo fiscal. Puede tener o no CAE.
+- "ticket_combustible" → Ticket de YPF, Shell, Axion, Puma u otra estación de servicio. Desglose de nafta/gasoil con ITC o impuestos al combustible.
 
-== REGLAS PARA FACTURAS ELECTRÓNICAS (tipo_documento = "factura") ==
-1. Facturas A y M: El IVA se desglosa del precio neto (discriminado). Extrae los montos de neto_gravado_* e iva_*.
-2. Facturas B, C, E y T: NO discriminan IVA (o está incluido/no alcanzado). DEBES devolver todos los campos iva_* y neto_gravado_* en 0. Asigna el importe total ÚNICAMENTE al campo "total" (o también a "no_gravado"/"exento" si el comprobante así lo dice expresamente). JAMAS deduzcas matemáticamente el IVA de una Factura B.
+== CAMPO razon_social_emisor ==
+EXTRAER SIEMPRE la razón social del emisor (empresa que emitió el ticket o factura).
+Buscar en: encabezado, sello, membrete, nombre en negrita, "Razón Social:", o cualquier nombre de empresa visible.
+Si es cadena conocida (McDonald's, YPF, Carrefour, COTO, Disco, Easy, etc.), usar el nombre oficial.
+Si no está visible → null.
 
-== REGLAS PARA TICKETS FISCALES (tipo_documento = "ticket_fiscal") ==
-3. Los tickets de controlador fiscal generalmente NO discriminan IVA visible. Pon iva_* y neto_gravado_* en 0. El importe total va en el campo "total".
-4. Si el ticket dice expresamente "IVA 21%: $XXX" o discrimina el IVA, entonces sí extraer neto_gravado_21 e iva_21.
-5. El campo "cae" debe ser null para tickets fiscales (no tienen CAE). En cambio pueden tener un número de comprobante interno del equipo.
-6. El punto_venta es el número de la caja/equipo fiscal.
+== PUNTO DE VENTA y NÚMERO ==
+punto_venta: los primeros 4 o 5 dígitos ANTES del guión en el número del comprobante. Ej: "0001-00012345" → punto_venta="00001"
+numero_comprobante: los dígitos DESPUÉS del guión. Ej: "0001-00012345" → numero_comprobante="00000012345"
+Si el comprobante no tiene guión y es un ticket fiscal, el número de equipo es el punto de venta.
 
-== REGLAS PARA TICKET FACTURA (tipo_documento = "ticket_factura") ==
-7. Similar a factura electrónica pero emitido por equipo fiscal. Si tiene letra A, discrimina IVA. Si tiene letra B, no discrimina.
-8. Puede o no tener CAE. Extraer si está presente.
+== CÓDIGO AFIP (codigo_afip_sugerido) ==
+Asignar el código numérico según el tipo:
+- Factura A = 1, Factura B = 6, Factura C = 11, Factura M = 51, Factura E = 19
+- Nota débito A = 2, Nota débito B = 7, Nota débito C = 12
+- Nota crédito A = 3, Nota crédito B = 8, Nota crédito C = 13
+- Ticket fiscal (genérico) = 89, Ticket Factura A = 81, Ticket Factura B = 82, Ticket Factura C = 83
+- Ticket combustible = 89
+Si no puedes determinarlo con certeza → null.
 
-== REGLAS PARA TICKET COMBUSTIBLE (tipo_documento = "ticket_combustible") ==
-9. Los tickets de combustible pueden tener IVA discriminado o no. Si lo discriminan, extraer neto_gravado_21 e iva_21.
-10. Combustibles (nafta, gasoil) tienen alícuota de IVA del 21% más impuestos internos al combustible. Si ves "Imp. Transferencia Combustibles" o "ITC", ese monto va en percepcion_iva (campo más cercano disponible).
-11. El emisor suele ser la estación de servicio (ej: YPF S.A., SHELL COMPAÑIA ARGENTINA DE PETROLEO S.A., etc.).
+== REGLAS DE IVA Y NETOS ==
+Facturas A y M → discriminan IVA. Extraer neto_gravado_21 e iva_21 (o 10.5/27 según alícuota).
+Facturas B, C, E, T → NO discriminan. Todos los campos iva_* y neto_gravado_* = 0. Total va solo en "total".
+Tickets fiscales → NO discriminan. Todo en "total". iva_* = 0. neto_gravado_* = 0.
+Si el ticket DICE EXPRESAMENTE "IVA 21%: $XXX" → entonces sí extraer el neto e IVA declarado.
+Tickets combustible → si tiene "IVA 21%" explícito, extraer. El ITC (Impuesto Transferencia Combustibles) va en percepcion_iva.
 
-== REGLAS GENERALES ==
-12. Asegúrate de que la matemática cierre perfecto (netos + ivas + percepciones + exento/no_gravado = total).
-13. Entiende "F.B." como Factura B y "F.A." como Factura A.
-14. Las fechas en formato YYYY-MM-DD.
-15. Si el CUIT no está visible (ej. ticket simple sin CUIT), usa "00000000000" como placeholder.
+== PERCEPCIONES ==
+Buscar en el comprobante textos como:
+- "Percepción IVA" / "Perc. IVA" / "Ret. IVA" → percepcion_iva
+- "Percepción IIBB" / "Perc. Ing. Brutos" → percepcion_iibb
+- "Percepción Ganancias" / "Perc. Gcias" → percepcion_ganancias
+- "Percepción SUSS" / "Perc. Seguridad Social" → percepcion_suss
+
+== VALIDACIÓN MATEMÁTICA OBLIGATORIA ==
+neto_gravado_21 + neto_gravado_105 + neto_gravado_27 + exento + no_gravado + iva_21 + iva_105 + iva_27 + percepcion_iva + percepcion_iibb + percepcion_ganancias + percepcion_suss = total
+Si la suma no cierra, revisar y ajustar los importes hasta que cierren.
+
+== FORMATO DE FECHA == YYYY-MM-DD
+== CUIT == 11 dígitos sin guiones. Si no es visible → "00000000000"
+== CAE == Solo para facturas electrónicas. Tickets fiscales → null.
 """
         
         image_part = types.Part.from_bytes(data=contents, mime_type=mime_type)
         
-        # Async Google GenAI call with Pydantic structured output
         response = await client.aio.models.generate_content(
-            model="gemini-2.5-flash", # Restaurado a 2.5-flash para saltar la limitación de cuota de 2.0
-            contents=[SYSTEM_PROMPT, "Extrae detalladamente los datos de este comprobante argentino.", image_part],
+            model="gemini-2.5-flash",
+            contents=[SYSTEM_PROMPT, "Extrae todos los datos de este comprobante argentino con máxima precisión.", image_part],
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=ComprobanteAFIP,
-                temperature=0.0
+                temperature=0.0,
+                thinking_config=types.ThinkingConfig(thinking_budget=5000)
             )
         )
         
         extracted_data = response.parsed
+        
+        # Auto-inferir codigo_afip si no viene del modelo
+        if extracted_data and not extracted_data.codigo_afip_sugerido:
+            tipo = (extracted_data.tipo_comprobante or '').upper().strip()
+            tipo_doc = extracted_data.tipo_documento or 'factura'
+            if tipo_doc in ('ticket_fiscal', 'ticket_combustible'):
+                extracted_data.codigo_afip_sugerido = 89
+            elif tipo_doc == 'ticket_factura':
+                code_map = {'A': 81, 'B': 82, 'C': 83}
+                extracted_data.codigo_afip_sugerido = code_map.get(tipo, 89)
+            else:
+                extracted_data.codigo_afip_sugerido = CODIGO_AFIP_MAP.get(tipo)
+        
         return extracted_data
     except Exception as e:
         import traceback

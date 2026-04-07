@@ -140,22 +140,17 @@ function App() {
                </header>
 
                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-lg mx-auto mb-6">
-                 <label className="block text-sm font-bold text-gray-700 mb-2">Cliente / Empresa a Procesar</label>
-                 <ClientSelector 
-                   clients={activeClients} 
-                   selectedClientId={selectedClientId} 
-                   onSelect={setSelectedClientId} 
+                 <label className="block text-sm font-bold text-gray-700 mb-2">
+                   Cliente / Empresa a Procesar <span className="text-gray-400 font-normal text-xs">(opcional)</span>
+                 </label>
+                 <ClientSelector
+                   clients={activeClients}
+                   selectedClientId={selectedClientId}
+                   onSelect={setSelectedClientId}
                  />
                </div>
 
-               <div className={`transition-all ${!selectedClientId ? 'opacity-50 pointer-events-none' : ''}`}>
-                 {!selectedClientId && (
-                   <p className="text-center text-sm text-red-500 mb-3 font-semibold flex items-center justify-center gap-1">
-                     Debes seleccionar un cliente primero para habilitar la carga.
-                   </p>
-                 )}
-                 <Dropzone onFilesAdded={handleFilesAdded} />
-               </div>
+               <Dropzone onFilesAdded={handleFilesAdded} />
              </div>
            )}
 

@@ -1,28 +1,19 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Dropzone from './components/Dropzone';
 import ReviewPanel from './components/ReviewPanel';
 import Sidebar from './components/Sidebar';
 import ClientsPanel from './components/ClientsPanel';
 import HistoryGrid from './components/HistoryGrid';
-import LandingPage from './components/LandingPage';
 import ClientSelector from './components/ClientSelector';
 import type { Client } from './types/client';
 import { FolderDown, Search, Bell } from 'lucide-react';
 import axios from 'axios';
-
-import { Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/auth/LoginPage';
-import SignUpPage from './pages/auth/SignUpPage';
-import CheckoutPage from './pages/CheckoutPage';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 type AppState = 'home' | 'upload' | 'processing' | 'review' | 'done' | 'history' | 'clients' | 'reports' | 'settings';
 
 function App() {
-  const navigate = useNavigate();
-  const [showLanding] = useState(true);
   const [appState, setAppState] = useState<AppState>('upload');
 
   const [selectedClientId, setSelectedClientId] = useState<string>('');
@@ -226,23 +217,7 @@ function App() {
     </div>
   );
 
-  return (
-    <Routes>
-      <Route path="/" element={
-        showLanding
-          ? <LandingPage
-              onLogin={() => navigate('/login')}
-              onSignUp={() => navigate('/signup')}
-              onCheckout={(plan) => navigate(`/checkout?plan=${plan}`)}
-            />
-          : <Navigate to="/dashboard" />
-      } />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignUpPage />} />
-      <Route path="/checkout" element={<CheckoutPage />} />
-      <Route path="/dashboard" element={renderDashboard()} />
-    </Routes>
-  );
+  return renderDashboard();
 }
 
 export default App;

@@ -22,7 +22,6 @@ app = FastAPI(title="ComproScan AR API", description="Motor Inteligente de proce
 
 from export_engine import generate_generic_csv, generate_holistor_txt
 from database import engine, Base
-from routers import auth
 import logging
 
 try:
@@ -41,7 +40,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router)
+# app.include_router(auth.router)  # Removiendo autenticación
 
 class Importes(BaseModel):
     neto_gravado_21: float = 0.0

@@ -157,12 +157,15 @@ Asignar el código numérico según el tipo:
 - Ticket combustible = 89
 Si no puedes determinarlo con certeza → null.
 
-== REGLAS DE IVA Y NETOS ==
-Facturas A y M → discriminan IVA. Extraer neto_gravado_21 e iva_21 (o 10.5/27 según alícuota).
-Facturas B, C, E, T → NO discriminan. Todos los campos iva_* y neto_gravado_* = 0. Total va solo en "total".
-Tickets fiscales → NO discriminan. Todo en "total". iva_* = 0. neto_gravado_* = 0.
-Si el ticket DICE EXPRESAMENTE "IVA 21%: $XXX" → entonces sí extraer el neto e IVA declarado.
-Tickets combustible → si tiene "IVA 21%" explícito, extraer. El ITC (Impuesto Transferencia Combustibles) va en percepcion_iva.
+== REGLAS DE IVA Y NETOS (MUY IMPORTANTE) ==
+ESTRICTAMENTE sigue este esquema según la Letra del Comprobante (A, B, C, M, E, T):
+- **Factura A / Ticket Factura A**: Discriminado. El IVA se desglosa del precio neto. EXTRAER neto_gravado e iva_* según corresponda.
+- **Factura B / Ticket Factura B**: Incluido. A CONSUMIDOR FINAL. El IVA está dentro del precio. NUNCA se discrimina. Todos los campos iva_* y neto_gravado_* DEBEN SER EXACTAMENTE 0. El importe completo va solo en "total".
+- **Factura C / Ticket Factura C / Ticket Fiscal s/letra**: No alcanzado. No se desglosa IVA. iva_* y neto_gravado_* DEBEN SER 0.
+- **Factura M**: Sujeto a retención. Discriminado (igual que A).
+- **Factura E**: Exento. iva_* = 0 y neto_gravado_* = 0.
+- **Factura T**: Reintegro turismo. iva_* = 0 y neto_gravado_* = 0.
+- Si es Factura/Ticket B, C, E o T, NUNCA "deduzcas" el IVA ni saques el neto, incluso si ves porcentajes en el ticket. Todo queda en "total".
 
 == PERCEPCIONES ==
 Buscar en el comprobante textos como:

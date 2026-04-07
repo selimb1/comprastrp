@@ -78,7 +78,7 @@ export default function ReviewPanel({
     return (
       <div className="w-full flex flex-col items-center justify-center p-12 bg-white rounded-xl shadow-sm border border-gray-100 min-h-[500px]">
         <div className="w-12 h-12 border-4 border-brand-sage border-t-brand-accent rounded-full animate-spin mb-4"></div>
-        <h3 className="text-xl font-semibold text-brand-navy">Analizando Comprobante con IA...</h3>
+        <h3 className="text-xl font-semibold text-brand-navy">Analizando comprobante...</h3>
         <p className="text-sm text-brand-sage mt-2">Extrayendo datos de ARCA y validando matemáticas.</p>
       </div>
     );

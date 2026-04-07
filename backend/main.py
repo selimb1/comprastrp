@@ -210,6 +210,21 @@ Si la suma no cierra, revisar y ajustar los importes hasta que cierren.
             else:
                 extracted_data.codigo_afip_sugerido = CODIGO_AFIP_MAP.get(tipo)
         
+        # --- FIX PROGRAMÁTICO PARA LEY 27.743 (Transparencia Fiscal) ---
+        # La IA puede confundirse al leer el texto "IVA Contenido: XXXX" obligatorio en las NNV/B.
+        # Contablemente, nunca deben extraerse esos campos como discriminados en estos tipos.
+        if extracted_data:
+            t_comp = (extracted_data.tipo_comprobante or '').upper().replace('FACTURA', '').replace('TICKET', '').replace('F.', '').strip()
+            if t_comp in ('B', 'C', 'E', 'T') or extracted_data.tipo_documento == 'ticket_fiscal':
+                im = extracted_data.importes
+                im.neto_gravado_21 = 0.0
+                im.neto_gravado_105 = 0.0
+                im.neto_gravado_27 = 0.0
+                im.iva_21 = 0.0
+                im.iva_105 = 0.0
+                im.iva_27 = 0.0
+                # Percepciones se pueden mantener, pero IVAs y Netos Gravados desaparecen.
+        
         return extracted_data
     except Exception as e:
         import traceback

@@ -4,8 +4,6 @@ import ReviewPanel from './components/ReviewPanel';
 import Sidebar from './components/Sidebar';
 import ClientsPanel from './components/ClientsPanel';
 import HistoryGrid from './components/HistoryGrid';
-import ClientSelector from './components/ClientSelector';
-import type { Client } from './types/client';
 import { FolderDown, Search, Bell } from 'lucide-react';
 import axios from 'axios';
 
@@ -16,11 +14,7 @@ type AppState = 'home' | 'upload' | 'processing' | 'review' | 'done' | 'history'
 function App() {
   const [appState, setAppState] = useState<AppState>('upload');
 
-  const [selectedClientId, setSelectedClientId] = useState<string>('');
-  const [activeClients] = useState<Client[]>([
-    { id: '1', user_id: 'u1', razon_social: 'Acme SRL', cuit: '30-71111111-2', tipo_contribuyente: 'Responsable Inscripto', condicion_iva: 'General', activo: true, created_at: '2023-01-01' },
-    { id: '2', user_id: 'u1', razon_social: 'Juan Perez', cuit: '20-12345678-9', tipo_contribuyente: 'Monotributista', condicion_iva: 'A', activo: true, created_at: '2023-02-15' },
-  ]);
+  const [selectedClientId] = useState<string>('');
   const [filesToProcess, setFilesToProcess] = useState<File[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -138,18 +132,6 @@ function App() {
                   <h2 className="text-3xl font-extrabold text-brand-navy mb-3 tracking-tight">Escaner de Tickets & Comprobantes</h2>
                   <p className="text-brand-sage">Foto del celular o PDF. Tickets fiscales, ticket factura, combustible y facturas A/B/C.</p>
                </header>
-
-               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-lg mx-auto mb-6">
-                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                   Cliente / Empresa a Procesar <span className="text-gray-400 font-normal text-xs">(opcional)</span>
-                 </label>
-                 <ClientSelector
-                   clients={activeClients}
-                   selectedClientId={selectedClientId}
-                   onSelect={setSelectedClientId}
-                 />
-               </div>
-
                <Dropzone onFilesAdded={handleFilesAdded} />
              </div>
            )}

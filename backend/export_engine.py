@@ -49,6 +49,14 @@ def _fmt_str(valor: str, ancho: int, fill: str = ' ', align: str = 'left') -> st
     return s.ljust(ancho, fill)
 
 
+def __escape_csv_injection(val_str: str) -> str:
+    """Previene ejecución de fórmulas en Excel al abrir CSV."""
+    if not val_str: return ""
+    s = str(val_str).replace(';', ' ').replace('\n', ' ').strip()
+    if s and (s[0] in ['=', '+', '-', '@', '\t', '\r']):
+        return f"'{s}" 
+    return s
+
 def generate_generic_csv(comprobantes: list[dict]) -> str:
     """
     Genera un CSV genérico separado por punto y coma, compatible con Excel argentino.
@@ -79,7 +87,7 @@ def generate_generic_csv(comprobantes: list[dict]) -> str:
             str(c.get('punto_venta', '')),
             str(c.get('numero_comprobante', '')),
             _clean_cuit(c.get('cuit_emisor', '')),
-            str(c.get('razon_social_emisor', '') or '').replace(';', '').replace('\n', ' '),
+            __escape_csv_injection(c.get('razon_social_emisor', 'S/N')),
             fmt(importes.get('neto_gravado_21', 0)),
             fmt(importes.get('iva_21', 0)),
             fmt(importes.get('neto_gravado_105', 0)),
@@ -141,20 +149,23 @@ def generate_holistor_txt(comprobantes: list[dict]) -> str:
             pass
 
         # --- 2. CÓDIGO AFIP (3 chars) ---
-        codigo_afip_raw = c.get('codigo_afip_sugerido')
-        if not codigo_afip_raw:
+        codigo_afip_raw = str(c.get('codigo_afip_sugerido', '')).strip()
+        if not codigo_afip_raw or not codigo_afip_raw.isdigit():
             # Inferir por tipo de documento si no viene
             tipo_doc = str(c.get('tipo_documento', 'factura')).lower()
             tipo_comp = str(c.get('tipo_comprobante', '')).upper().strip()
             if tipo_doc in ('ticket_fiscal', 'ticket_combustible'):
-                codigo_afip_raw = 89
+                codigo_afip_raw = '89'
             elif tipo_doc == 'ticket_factura':
-                tf_map = {'A': 81, 'B': 82, 'C': 83}
-                codigo_afip_raw = tf_map.get(tipo_comp, 89)
+                tf_map = {'A': '81', 'B': '82', 'C': '83'}
+                codigo_afip_raw = tf_map.get(tipo_comp, '89')
             else:
-                fa_map = {'A': 1, 'B': 6, 'C': 11, 'M': 51, 'E': 19, 'T': 15}
-                codigo_afip_raw = fa_map.get(tipo_comp, 6)
-        codigo_afip = str(int(codigo_afip_raw)).zfill(3)
+                fa_map = {'A': '1', 'B': '6', 'C': '11', 'M': '51', 'E': '19', 'T': '15'}
+                codigo_afip_raw = fa_map.get(tipo_comp, '6')
+        try:
+            codigo_afip = str(int(codigo_afip_raw)).zfill(3)
+        except ValueError:
+            codigo_afip = "006"
 
         # --- 3. PUNTO DE VENTA (5 chars) ---
         pv_raw = str(c.get('punto_venta', '0')).strip()

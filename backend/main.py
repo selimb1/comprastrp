@@ -1,4 +1,5 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Response
+from fastapi import FastAPI, UploadFile, File, HTTPException, Response, Depends, Security
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional, List
 from datetime import date
@@ -22,6 +23,7 @@ app = FastAPI(title="ComproScan AR API", description="Motor Inteligente de proce
 
 from export_engine import generate_generic_csv, generate_holistor_txt
 from database import engine, Base
+from routers import reconciliation
 import logging
 
 try:
@@ -31,16 +33,31 @@ try:
 except Exception as e:
     logging.error(f"Falla inicializando la base de datos (Posible falta de DATABASE_URL): {e}")
 
-# CORS para que el Frontend local acceda a la API
+# CORS protegido para Producción y Desarrollo
+ORIGENES_PERMITIDOS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://comprascan-frontend.vercel.app"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # En prod debe ser restringido
+    allow_origins=ORIGENES_PERMITIDOS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
+api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
+
+def get_api_key(api_key: str = Security(api_key_header)):
+    expected_pin = os.getenv("GLOBAL_API_PIN", "2024")
+    if api_key != expected_pin:
+        raise HTTPException(status_code=403, detail="PIN de acceso inválido o no provisto")
+    return api_key
+
 # app.include_router(auth.router)  # Removiendo autenticación
+app.include_router(reconciliation.router, dependencies=[Depends(get_api_key)])
 
 class Importes(BaseModel):
     neto_gravado_21: float = 0.0
@@ -91,8 +108,14 @@ def is_valid_file(filename: str, content_type: str) -> bool:
     # Si no tiene extensión válida pero el MIME sí es imagen/pdf, igual aceptar
     return ext_valid or mime_valid
 
+MAX_FILE_BYTES = 10 * 1024 * 1024  # 10 MB limit
+
 @app.post("/api/v1/extract", response_model=ComprobanteAFIP)
-async def process_file(file: UploadFile = File(...), client_id: Optional[str] = Form(None)):
+async def process_file(
+    file: UploadFile = File(...), 
+    client_id: Optional[str] = Form(None),
+    _: str = Depends(get_api_key)
+):
     """
     Recibe un archivo (imagen o PDF) y delega el análisis al motor de IA Gemini.
     Soporta JPG, PNG, PDF, HEIC (iPhone), WEBP, BMP, TIFF.
@@ -118,6 +141,8 @@ async def process_file(file: UploadFile = File(...), client_id: Optional[str] = 
     
     try:
         contents = await file.read()
+        if len(contents) > MAX_FILE_BYTES:
+            raise HTTPException(status_code=413, detail="El archivo excede el límite de 10MB.")
         
         # Normalizar MIME type: HEIC/HEIF → image/jpeg para compatibilidad con Gemini
         mime_type = content_type
@@ -239,7 +264,7 @@ Si la suma no cierra, revisar y ajustar los importes hasta que cierren.
         raise HTTPException(status_code=500, detail=error_msg)
 
 @app.post("/api/v1/export/csv")
-def export_csv(comprobantes: List[ComprobanteAFIP]):
+def export_csv(comprobantes: List[ComprobanteAFIP], _: str = Depends(get_api_key)):
     """
     Recibe el array final de comprobantes validados y retorna un CSV descargable.
     """
@@ -252,7 +277,7 @@ def export_csv(comprobantes: List[ComprobanteAFIP]):
     )
 
 @app.post("/api/v1/export/txt")
-def export_txt(comprobantes: List[ComprobanteAFIP]):
+def export_txt(comprobantes: List[ComprobanteAFIP], _: str = Depends(get_api_key)):
     """
     Recibe comprobantes y exporta a formato plano de ancho fijo (Holistor / AFIP).
     """

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, Plus, Building2, Edit2, Trash2, X } from 'lucide-react';
 import type { Client, ClientCreatePayload, TipoContribuyente } from '../types/client';
 
@@ -7,8 +7,17 @@ const MOCK_CLIENTS: Client[] = [
   { id: '2', user_id: 'u1', razon_social: 'Juan Perez', cuit: '20-12345678-9', tipo_contribuyente: 'Monotributista', condicion_iva: 'A', activo: true, created_at: '2023-02-15' },
 ];
 
-export default function ClientsPanel() {
+interface ClientsPanelProps {
+  onClientsLoaded?: (clients: Client[]) => void;
+}
+
+export default function ClientsPanel({ onClientsLoaded }: ClientsPanelProps) {
   const [clients, setClients] = useState<Client[]>(MOCK_CLIENTS);
+
+  // Notificar al padre (App) cada vez que la lista cambia
+  useEffect(() => {
+    onClientsLoaded?.(clients);
+  }, [clients, onClientsLoaded]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActive, setFilterActive] = useState<boolean | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);

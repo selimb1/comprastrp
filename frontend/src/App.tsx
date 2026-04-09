@@ -1,18 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Dropzone from './components/Dropzone';
 import ReviewPanel from './components/ReviewPanel';
 import Sidebar from './components/Sidebar';
 import ClientsPanel from './components/ClientsPanel';
 import HistoryGrid from './components/HistoryGrid';
+import ReconciliationPage from './pages/ReconciliationPage';
+import { useReconciliationStore } from './store/reconciliationStore';
 import { FolderDown, Search, Bell } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-type AppState = 'home' | 'upload' | 'processing' | 'review' | 'done' | 'history' | 'clients' | 'reports' | 'settings';
+type AppState = 'home' | 'upload' | 'processing' | 'review' | 'done' | 'history' | 'clients' | 'reports' | 'settings' | 'reconciliation';
 
 function App() {
   const [appState, setAppState] = useState<AppState>('upload');
+  const [hasPin, setHasPin] = useState(!!localStorage.getItem('app_pin'));
+  const [pinInput, setPinInput] = useState('');
 
   const [selectedClientId] = useState<string>('');
   const [filesToProcess, setFilesToProcess] = useState<File[]>([]);
@@ -20,6 +24,22 @@ function App() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [extractedData, setExtractedData] = useState<any | null>(null);
   const [finalBatchData, setFinalBatchData] = useState<any[]>([]);
+  const { setVouchers } = useReconciliationStore();
+
+  useEffect(() => {
+    if (hasPin) {
+      axios.defaults.headers.common['x-api-key'] = localStorage.getItem('app_pin') || '';
+    }
+  }, [hasPin]);
+
+  const handlePinSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pinInput.trim()) {
+      localStorage.setItem('app_pin', pinInput.trim());
+      axios.defaults.headers.common['x-api-key'] = pinInput.trim();
+      setHasPin(true);
+    }
+  };
 
   const handleFilesAdded = async (files: File[]) => {
     if (files.length === 0) return;
@@ -58,6 +78,23 @@ function App() {
     const newBatch = [...finalBatchData, updatedData];
     setFinalBatchData(newBatch);
 
+    // Populate reconciliation store with real processed vouchers
+    const mappedVouchers = newBatch.map((v, i) => ({
+      id: v.id || `vchr-${Date.now()}-${i}`,
+      tipo_comprobante: v.tipo_comprobante || 'Factura',
+      tipo_documento: v.tipo_documento || 'factura',
+      punto_venta: v.punto_venta || '0000',
+      numero_comprobante: v.numero_comprobante || '00000000',
+      fecha_emision: v.fecha_emision || new Date().toISOString().split('T')[0],
+      cuit_emisor: v.cuit_emisor || '00000000000',
+      razon_social_emisor: v.razon_social_emisor || 'Consumidor Final',
+      total: parseFloat(v.importes?.total || v.total || '0'),
+      moneda: 'ARS',
+      reconciliation_status: 'pendiente' as const,
+      matched_transaction_ids: []
+    }));
+    setVouchers(mappedVouchers);
+
     const nextIndex = currentIndex + 1;
     if (nextIndex < filesToProcess.length) {
       setCurrentIndex(nextIndex);
@@ -79,7 +116,10 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/api/v1/export/${endpoint}`, {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': localStorage.getItem('app_pin') || ''
+          },
           body: JSON.stringify(finalBatchData)
       });
       const blob = await response.blob();
@@ -183,6 +223,12 @@ function App() {
              </div>
            )}
 
+           {appState === 'reconciliation' && (
+             <div className="h-full w-full max-w-[1600px] mx-auto">
+               <ReconciliationPage />
+             </div>
+           )}
+
            {(appState === 'reports' || appState === 'settings') && (
              <div className="text-center mt-20">
                 <h3 className="text-xl font-bold text-gray-400">Panel "{appState}" en construcción 🏗️</h3>
@@ -193,6 +239,35 @@ function App() {
 
     </div>
   );
+
+  if (!hasPin) {
+    return (
+      <div className="min-h-screen bg-[#F5F7F6] flex flex-col items-center justify-center font-sans">
+         <div className="bg-white p-10 rounded-2xl shadow-xl max-w-sm w-full text-center border border-gray-100">
+            <div className="bg-brand-sage/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-brand-navy" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+               </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-brand-navy mb-2">Acceso Privado</h2>
+            <p className="text-gray-500 text-sm mb-8">Por favor, ingresa el PIN de seguridad para acceder a ComproScan.</p>
+            <form onSubmit={handlePinSubmit} className="space-y-4">
+               <input 
+                 type="password" 
+                 value={pinInput}
+                 onChange={(e) => setPinInput(e.target.value)}
+                 placeholder="PIN de acceso" 
+                 autoFocus
+                 className="w-full text-center tracking-widest text-lg px-4 py-3 bg-gray-50 rounded-xl border-2 border-gray-200 outline-none focus:border-brand-sage focus:bg-white transition-all shadow-inner"
+               />
+               <button type="submit" className="w-full btn-primary py-3 font-semibold tracking-wide text-lg">
+                 Desbloquear
+               </button>
+            </form>
+         </div>
+      </div>
+    );
+  }
 
   return renderDashboard();
 }

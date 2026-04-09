@@ -1,4 +1,4 @@
-import { Home, UploadCloud, FileSpreadsheet, Settings, Briefcase, BarChart3, Scan } from 'lucide-react';
+import { Home, UploadCloud, FileSpreadsheet, Settings, Briefcase, BarChart3, Scan, Landmark } from 'lucide-react';
 
 interface SidebarProps {
   currentMenu: string;
@@ -10,6 +10,7 @@ export default function Sidebar({ currentMenu, setMenu }: SidebarProps) {
     { id: 'home', label: 'Dashboard', icon: Home },
     { id: 'upload', label: 'Procesar Lotes', icon: UploadCloud },
     { id: 'history', label: 'Comprobantes', icon: FileSpreadsheet },
+    { id: 'reconciliation', label: 'Conciliación Bancaria', icon: Landmark },
     { id: 'clients', label: 'Clientes', icon: Briefcase },
     { id: 'reports', label: 'Reportes', icon: BarChart3 },
     { id: 'settings', label: 'Configuración', icon: Settings },

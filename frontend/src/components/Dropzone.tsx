@@ -78,6 +78,12 @@ export default function Dropzone({ onFilesAdded }: DropzoneProps) {
             <FileType size={18} /> Explorar Archivos
           </button>
         </div>
+
+        <div className="mt-8 pt-4 border-t border-gray-100 max-w-lg mx-auto">
+          <p className="text-xs text-gray-400 leading-tight">
+            Al subir archivos, declaras contar con consentimiento e indicas comprensión de que los datos son procesados temporalmente mediante Inteligencia Artificial (Estados Unidos). No almacenamos de forma permanente tus reportes ni imágenes.
+          </p>
+        </div>
       </div>
       
       {/* Cajas de ventajas */}

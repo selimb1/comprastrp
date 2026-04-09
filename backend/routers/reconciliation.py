@@ -32,8 +32,9 @@ import re
 import io
 import csv
 import os
-from google import genai
-from google.genai import types
+import base64
+import openai
+import fitz  # PyMuPDF
 
 router = APIRouter(prefix="/api/v1/reconciliation", tags=["Conciliación Bancaria"])
 
@@ -330,8 +331,8 @@ async def upload_and_extract(
     saldo_final: Optional[float] = None
     cuenta: Optional[str] = None
 
-    api_key = os.getenv("GEMINI_API_KEY")
-    gemini_client = genai.Client(api_key=api_key) if api_key else None
+    api_key = os.getenv("OPENAI_API_KEY")
+    openai_client = openai.AsyncOpenAI(api_key=api_key) if api_key else None
 
     for upload_file in files:
         filename = upload_file.filename or "extracto"
@@ -372,19 +373,23 @@ async def upload_and_extract(
             except Exception as e:
                 raise HTTPException(status_code=422, detail=f"Error parseando CSV: {str(e)}")
 
-        # ── PDF/Image: usar Gemini ─────────────────────────────────
+        # ── PDF/Image: usar OpenAI ─────────────────────────────────
         else:
-            if not gemini_client:
-                # Si no hay Gemini, retornar datos mock para demo
+            if not openai_client:
+                # Si no hay OpenAI, mostrar error
                 raise HTTPException(
                     status_code=503,
-                    detail="GEMINI_API_KEY no configurada. Configura la clave para procesar PDFs."
+                    detail="OPENAI_API_KEY no configurada. Configura la clave para procesar PDFs."
                 )
 
+            mime = "image/jpeg"
             if 'pdf' in (content_type or '').lower() or filename.lower().endswith('.pdf'):
-                mime = "application/pdf"
-            else:
-                mime = "image/jpeg"
+                doc = fitz.open(stream=contents, filetype="pdf")
+                if len(doc) == 0:
+                    raise HTTPException(status_code=400, detail="PDF vacío o dañado")
+                page = doc.load_page(0)
+                pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+                contents = pix.tobytes("jpeg")
 
             try:
                 # Schema simplificado para la respuesta de Gemini
@@ -409,19 +414,32 @@ async def upload_and_extract(
                     saldo_final: Optional[float] = None
                     transactions: List[TxSchema]
 
-                image_part = types.Part.from_bytes(data=contents, mime_type=mime)
-                response = await gemini_client.aio.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=[EXTRACTO_SYSTEM_PROMPT, "Extrae todos los movimientos de este extracto bancario argentino.", image_part],
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        response_schema=ExtractSchema,
-                        temperature=0.0,
-                        thinking_config=types.ThinkingConfig(thinking_budget=8000)
-                    )
+                base64_image = base64.b64encode(contents).decode("utf-8")
+                response = await openai_client.beta.chat.completions.parse(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": EXTRACTO_SYSTEM_PROMPT
+                        },
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": "Extrae todos los movimientos de este extracto bancario argentino."},
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:{mime};base64,{base64_image}"
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    response_format=ExtractSchema,
+                    temperature=0.0
                 )
                 
-                extracted = response.parsed
+                extracted = response.choices[0].message.parsed
                 if extracted:
                     detected_banco = extracted.banco or detected_banco
                     periodo_desde = extracted.periodo_desde

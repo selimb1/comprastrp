@@ -93,6 +93,9 @@ export default function ReconciliationUploader(_props: ReconciliationUploaderPro
 
       const res = await fetch(`${API_URL}/api/v1/reconciliation/upload`, {
         method: 'POST',
+        headers: {
+          'x-api-key': localStorage.getItem('app_pin') || ''
+        },
         body: formData,
       });
       if (!res.ok) throw new Error('Error al enviar el archivo al servidor.');
@@ -102,7 +105,10 @@ export default function ReconciliationUploader(_props: ReconciliationUploaderPro
       if (session.vouchers && session.vouchers.length > 0) {
         const matchRes = await fetch(`${API_URL}/api/v1/reconciliation/match`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-api-key': localStorage.getItem('app_pin') || ''
+          },
           body: JSON.stringify({
             client_id: '',
             statement: data.statement,

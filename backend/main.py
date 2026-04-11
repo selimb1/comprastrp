@@ -6,18 +6,18 @@ from datetime import date
 from fastapi.middleware.cors import CORSMiddleware
 import base64
 import os
-import openai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 import fitz  # PyMuPDF
 
 load_dotenv(override=True)
-api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
-    # Si no hay API Key, mostramos advertencia
-    print("⚠️  ADVERTENCIA: La OPENAI_API_KEY no está configurada en backend/.env")
-    print("Por favor, configura tu API Key de OpenAI.")
+    print("⚠️  ADVERTENCIA: La GEMINI_API_KEY no está configurada en backend/.env")
+    print("Por favor, configura tu API Key de Google Gemini.")
 
-client = openai.AsyncOpenAI(api_key=api_key if api_key else "DUMMY_KEY")
+client = genai.Client(api_key=api_key if api_key else "DUMMY_KEY")
 
 app = FastAPI(title="ComproScan AR API", description="Motor Inteligente de procesamiento de facturas ARG")
 
@@ -215,33 +215,21 @@ Si la suma no cierra, revisar y ajustar los importes hasta que cierren.
 == CUIT == 11 dígitos sin guiones. Si no es visible → "00000000000"
 == CAE == Solo para facturas electrónicas. Tickets fiscales → null.
 """
-        base64_image = base64.b64encode(contents).decode("utf-8")
-        
-        response = await client.beta.chat.completions.parse(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": SYSTEM_PROMPT
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": "Extrae todos los datos de este comprobante argentino con máxima precisión."},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:{mime_type};base64,{base64_image}"
-                            }
-                        }
-                    ]
-                }
+        response = await client.aio.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=[
+                SYSTEM_PROMPT,
+                "Extrae todos los datos de este comprobante argentino con máxima precisión.",
+                types.Part.from_bytes(data=contents, mime_type=mime_type)
             ],
-            response_format=ComprobanteAFIP,
-            temperature=0.0
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=ComprobanteAFIP,
+                temperature=0.0
+            )
         )
         
-        extracted_data = response.choices[0].message.parsed
+        extracted_data = response.parsed
         
         # Auto-inferir codigo_afip si no viene del modelo
         if extracted_data and not extracted_data.codigo_afip_sugerido:
@@ -276,8 +264,8 @@ Si la suma no cierra, revisar y ajustar los importes hasta que cierren.
         traceback.print_exc()
         
         error_msg = str(e)
-        if "invalid_api_key" in error_msg.lower() or "incorrect api key" in error_msg.lower():
-            error_msg = "Error de Servidor: La OPENAI_API_KEY es inválida. Revisa tu archivo backend/.env"
+        if "api_key" in error_msg.lower() or "403" in error_msg.lower():
+            error_msg = "Error de Servidor: La GEMINI_API_KEY es inválida o expirada."
         elif "model_not_found" in error_msg.lower():
             error_msg = "Error de Servidor: El modelo de IA no está disponible en tu región o no existe."
             

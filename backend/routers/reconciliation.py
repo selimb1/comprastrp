@@ -33,7 +33,8 @@ import io
 import csv
 import os
 import base64
-import openai
+from google import genai
+from google.genai import types
 import fitz  # PyMuPDF
 
 router = APIRouter(prefix="/api/v1/reconciliation", tags=["Conciliación Bancaria"])
@@ -331,8 +332,8 @@ async def upload_and_extract(
     saldo_final: Optional[float] = None
     cuenta: Optional[str] = None
 
-    api_key = os.getenv("OPENAI_API_KEY")
-    openai_client = openai.AsyncOpenAI(api_key=api_key) if api_key else None
+    gemini_api_key = os.getenv("GEMINI_API_KEY")
+    gemini_client = genai.Client(api_key=gemini_api_key) if gemini_api_key else None
 
     for upload_file in files:
         filename = upload_file.filename or "extracto"
@@ -373,13 +374,12 @@ async def upload_and_extract(
             except Exception as e:
                 raise HTTPException(status_code=422, detail=f"Error parseando CSV: {str(e)}")
 
-        # ── PDF/Image: usar OpenAI ─────────────────────────────────
+        # ── PDF/Image: usar Gemini ─────────────────────────────────
         else:
-            if not openai_client:
-                # Si no hay OpenAI, mostrar error
+            if not gemini_client:
                 raise HTTPException(
                     status_code=503,
-                    detail="OPENAI_API_KEY no configurada. Configura la clave para procesar PDFs."
+                    detail="GEMINI_API_KEY no configurada. Configura la clave en Render."
                 )
 
             mime = "image/jpeg"
@@ -414,32 +414,21 @@ async def upload_and_extract(
                     saldo_final: Optional[float] = None
                     transactions: List[TxSchema]
 
-                base64_image = base64.b64encode(contents).decode("utf-8")
-                response = await openai_client.beta.chat.completions.parse(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {
-                            "role": "system",
-                            "content": EXTRACTO_SYSTEM_PROMPT
-                        },
-                        {
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": "Extrae todos los movimientos de este extracto bancario argentino."},
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:{mime};base64,{base64_image}"
-                                    }
-                                }
-                            ]
-                        }
+                response = await gemini_client.aio.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=[
+                        EXTRACTO_SYSTEM_PROMPT,
+                        "Extrae todos los movimientos de este extracto bancario argentino.",
+                        types.Part.from_bytes(data=contents, mime_type=mime)
                     ],
-                    response_format=ExtractSchema,
-                    temperature=0.0
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        response_schema=ExtractSchema,
+                        temperature=0.0
+                    )
                 )
-                
-                extracted = response.choices[0].message.parsed
+
+                extracted = response.parsed
                 if extracted:
                     detected_banco = extracted.banco or detected_banco
                     periodo_desde = extracted.periodo_desde

@@ -39,7 +39,7 @@ ORIGENES_PERMITIDOS = [
     "http://localhost:3000",
     "https://comprascan-frontend.vercel.app",
     "https://comprascan.vercel.app",
-    "https://comprasstrp.vercel.app",
+    "https://comprastrp.vercel.app",
 ]
 
 app.add_middleware(
